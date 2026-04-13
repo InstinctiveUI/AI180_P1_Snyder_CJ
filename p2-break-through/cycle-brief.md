@@ -5,11 +5,7 @@
 
 ## Creative Problem
 
-<!-- Write your creative problem here before Cycle 1. -->
-<!-- Choose one: a portfolio gap, an industry problem, or a creative ambition that feels out of reach. -->
-<!-- It should stretch toward where you want to go, not where you already are. -->
-
-*[Your creative problem statement goes here.]*
+When modeling in 3D and using a specific program, it creates the models with things like an X, Y, and Z axis. The problem arises when you transfer the models to a different application to work on it — when doing so it creates issues like the programs calling the X, Y, and Z axis different things, causing the model to be messed up in the transition. I would like to create a way to make this easier or fix it.
 
 ---
 
@@ -18,16 +14,16 @@
 *Written once, before Cycle 1, in class during Session 5.*
 
 ### 1. My Stance
-<!-- What creative direction are you pursuing? -->
-
-*[Your stance goes here.]*
+I am pursuing this issue to create a guide to show how to transfer the models from applications easier.
 
 ### 2. What Matters Most
-<!-- What qualities or values are non-negotiable in this work? -->
-
-*[Your non-negotiables go here.]*
+I am doing this to create a tool that is useful to myself and others in the field.
 
 ### 3. What I Will Not Compromise On
-<!-- The line AI will not cross. -->
+I will not let the AI just create the solution — I will research and find the fixes myself and then use AI to help organize. That's all for Cycle 1.
 
-*[Your line goes here.]*
+---
+
+## Cycle 1
+
+**AI Decision:** I have decided to use AI after I have collected all the data, to help organize it in a way I can do but it would take too much time.
