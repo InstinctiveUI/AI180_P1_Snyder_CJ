@@ -1,0 +1,17 @@
+---
+config:
+  layout: dagre
+  look: handDrawn
+---
+flowchart LR
+    A["Open AI Tool without deciding what I want it to do"] ----> A1["Copy Code that isnt working into AI to help diagnose the problem"]
+    A1 ----> B("Tell AI to not deviate from my way of coding")
+    B -- Einstellung Bias I am stuck to my own way of coding --> C{"Ask AI to refine and how to fix coding issue"}
+    C ----> F["Accept 2 different fixes for code without question"]
+    F -- Confirmation Bias --> n1["Ask Ai to find any other issues with code"]
+    n1 --> n2["Did the code work while nat changing the format"]
+    n2 -- Yes --> n3["Finalize Code"]
+    n2 -- NO --> C
+
+    A1@{ shape: rounded}
+    n3@{ shape: hex}
