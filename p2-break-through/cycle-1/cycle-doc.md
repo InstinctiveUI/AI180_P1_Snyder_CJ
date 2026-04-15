@@ -3,19 +3,7 @@
 
 **Goal:** Produce something that surprises you. Attack your brief from a direction you would never normally take.
 
----
-
-## Before *(Declare step — written in class)*
-
-**Defixation Technique:**
-<!-- Name the technique you are using this cycle. -->
-
-*[Technique name here.]*
-
-**AI Decision:**
-<!-- What will AI make in this cycle? What stays yours? Be specific. -->
-
-*[Your AI Decision here.]*
+I am creating a way to differ different issues that arise with transfering 3d assets from programs
 
 ---
 
@@ -23,28 +11,25 @@
 
 **What I prompted:**
 
-*[Log your key prompts here.]*
+organise the information into a table showing the issues programs and solutions for 3d assets 
 
 **What AI produced:**
 
-*[Describe or paste key AI outputs here.]*
+It produced a simple table that listed the programs the file is from the issues that could arise and the solutions that could be taken
 
 **What I kept, changed, or rejected:**
 
-*[Document your directing decisions here.]*
+I kept this table because it did not change the information that I gathered just put it together 
 
 ---
 
-## After *(Document step — written in class)*
-
 **What happened vs. what I intended:**
 
-*[Reflect here.]*
+I made the simple table, it did not cover as any issues as i would have liked but it helpes with the most common ones 
 
 **Did the technique break fixation?**
 
-*[Yes/No — and explain the moment it happened, or why it didn't.]*
+This broke my habit of just waiting for the problem and then looking it up and fixing it, this table makes me prepare for the issue before hand 
 
 **Did my AI Decision hold?**
-
-*[Yes/No — explain.]*
+Yes my decision to use AI for the simple part help and worked as planned
