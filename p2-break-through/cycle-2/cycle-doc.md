@@ -1,21 +1,9 @@
-# Cycle 2: Make What You Could Not Make Before
+# Cycle 2: Push
 ## CJ Snyder | AI 180
 
-**Goal:** A response that feels like a leap, not a step. AI is a production tool this cycle — use it to generate, build, or transform material you could not produce alone.
+**Goal:** Produce something that surprises you. Attack your brief from a direction you would never normally take.
 
----
-
-## Before *(Declare step — written in class)*
-
-**Defixation Technique:**
-<!-- Must be different from Cycle 1. -->
-
-*[Technique name here.]*
-
-**AI Decision:**
-<!-- Must differ from Cycle 1's AI approach (forced switch). Be specific about what AI produces. -->
-
-*[Your AI Decision here.]*
+I am creating a way to differ different issues that arise with transfering 3d assets from programs
 
 ---
 
@@ -23,32 +11,24 @@
 
 **What I prompted:**
 
-*[Log your key prompts here.]*
-
+I promted Claude to use the information that I collected to help create a program that would automatically detect the 3d file and fix any issues with the file
 **What AI produced:**
 
-*[Describe or paste key AI outputs here.]*
+It helped produced a simple python program that allows you submmit 3d models and chnage the format to tranfer to other programs 
 
 **What I kept, changed, or rejected:**
 
-*[Document your directing decisions here.]*
+I kept this most of this program because it was a good base and helpful in my project, I added a .md file that would log the program so I can see what exactly the program does 
 
 ---
 
-## After *(Document step — written in class)*
-
 **What happened vs. what I intended:**
 
-*[Reflect here.]*
+What heppend actually went a lot smoother that what I expected and Cluade was very helpful 
 
 **Did the technique break fixation?**
 
-*[Yes/No — and explain the moment it happened, or why it didn't.]*
+This helped me a ton with any future projects but I do not believe it broke any techniques 
 
 **Did my AI Decision hold?**
-
-*[Yes/No — explain.]*
-
-**How did this cycle's AI use differ from Cycle 1? What did the forced switch reveal?**
-
-*[Reflect here.]*
+Yes my decision to use AI for the simple part help and worked as planned
