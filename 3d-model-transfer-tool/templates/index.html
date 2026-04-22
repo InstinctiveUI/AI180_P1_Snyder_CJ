@@ -468,7 +468,11 @@
                 </div>
                 <div class="btn-row">
                     <button class="btn btn-primary" id="recommendBtn">Get Recommendations</button>
+                    <span id="recLoading" style="display:none; align-items:center; gap:8px;">
+                        <div class="spinner"></div><span style="color:var(--text-dim); font-size:14px;">Looking up recommendations...</span>
+                    </span>
                 </div>
+                <div id="recError" style="display:none; color:var(--red); font-size:13px; margin-top:10px;"></div>
             </div>
             <div id="recResults" style="display:none">
                 <div class="card">
@@ -767,14 +771,38 @@ function renderFixResults(result) {
 document.getElementById('recommendBtn').addEventListener('click', async () => {
     const source = document.getElementById('recSource').value;
     const target = document.getElementById('recTarget').value;
-    if (!source || !target) { alert('Please select both source and target applications.'); return; }
+    const errDiv = document.getElementById('recError');
+    errDiv.style.display = 'none';
 
-    const res = await fetch('/api/recommend', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source, target })
-    });
-    const data = await res.json();
+    if (!source || !target) {
+        errDiv.textContent = 'Please select both a source and target application.';
+        errDiv.style.display = 'block';
+        return;
+    }
+
+    document.getElementById('recLoading').style.display = 'flex';
+    document.getElementById('recommendBtn').disabled = true;
+    document.getElementById('recResults').style.display = 'none';
+
+    let data;
+    try {
+        const res = await fetch('/api/recommend', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ source, target })
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        data = await res.json();
+    } catch (err) {
+        errDiv.textContent = 'Could not get recommendations — make sure the app is running. (' + err.message + ')';
+        errDiv.style.display = 'block';
+        document.getElementById('recLoading').style.display = 'none';
+        document.getElementById('recommendBtn').disabled = false;
+        return;
+    }
+
+    document.getElementById('recLoading').style.display = 'none';
+    document.getElementById('recommendBtn').disabled = false;
     document.getElementById('recResults').style.display = 'block';
 
     const fmtDiv = document.getElementById('recFormats');
