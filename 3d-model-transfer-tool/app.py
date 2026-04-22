@@ -25,20 +25,56 @@ ALLOWED_EXTENSIONS = {'stl', 'obj', 'fbx', 'glb', 'gltf', 'ply', 'dae', '3ds'}
 LOG_FILE = os.path.join(os.path.dirname(__file__), 'activity_log.md')
 
 
+EXPLANATIONS = {
+    'Analyze': (
+        "The program loaded the model file and inspected its geometry. "
+        "It checked vertex and face counts, tested whether the mesh is watertight (no holes), "
+        "looked for inverted normals, degenerate faces, duplicate faces, scale mismatches, "
+        "and disconnected debris. Any issues found are flagged with severity levels and marked "
+        "as auto-fixable where possible."
+    ),
+    'Auto-Fix': (
+        "The program applied targeted repairs to the model based on what the analysis detected. "
+        "Each fix addresses a specific transfer problem: scaling corrects unit mismatches between apps, "
+        "hole-filling makes the mesh watertight for printing, normal fixes stop faces from appearing "
+        "inside-out, and debris removal cleans up leftover boolean artifacts. "
+        "The repaired model was exported to the chosen format."
+    ),
+    'Auto-Fix FAILED': (
+        "The program attempted to repair the model but encountered an error during the fix or export process. "
+        "The original file was not modified. Check the details column for the specific error."
+    ),
+    'Format Recommendation': (
+        "The program looked up the source and target applications selected by the user and matched them "
+        "against the knowledge base of known transfer issues. It ranked the best export formats for that "
+        "specific app-to-app workflow and listed any known problems (broken materials, scale issues, "
+        "animation loss, etc.) the user should expect."
+    ),
+    'Download': (
+        "The user downloaded the repaired model file that was produced by the Auto-Fix step. "
+        "This is the cleaned, export-ready version of their original upload."
+    ),
+}
+
+
 def write_log(action, filename=None, details=None):
     """Append an entry to the markdown activity log."""
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    # Create the file with a header if it doesn't exist yet
     if not os.path.exists(LOG_FILE):
         with open(LOG_FILE, 'w') as f:
             f.write('# 3D Model Transfer Assistant — Activity Log\n\n')
-            f.write('| Timestamp | Action | File | Details |\n')
-            f.write('|-----------|--------|------|---------|\n')
+            f.write('## Why the Program Uses the Fixes It Does\n\n')
+            f.write('See the Fix Explanations section below the session log.\n\n')
+            f.write('---\n\n')
+            f.write('## Session Log\n\n')
+            f.write('| Timestamp | Action | File | Details | What the Program Did |\n')
+            f.write('|-----------|--------|------|---------|----------------------|\n')
 
     file_col = filename or '—'
     detail_col = details or '—'
+    explanation = EXPLANATIONS.get(action, 'The program completed the requested operation.')
     with open(LOG_FILE, 'a') as f:
-        f.write(f'| {timestamp} | {action} | {file_col} | {detail_col} |\n')
+        f.write(f'| {timestamp} | {action} | {file_col} | {detail_col} | {explanation} |\n')
 
 
 def allowed_file(filename):

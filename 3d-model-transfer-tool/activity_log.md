@@ -29,13 +29,13 @@ Models over 500,000 faces are flagged as high-poly. CAD software, game engines, 
 
 ## Session Log
 
-| Timestamp | Action | File | Details |
-|-----------|--------|------|---------|
-| 2026-04-20 11:17:33 | Analyze | my_model.stl | 8 verts, 12 faces, 0 issues found, 0 auto-fixable |
-| 2026-04-20 11:17:33 | Format Recommendation | — | Blender → Cura (2 formats suggested) |
-| 2026-04-20 11:17:33 | Auto-Fix | my_model.stl | Output: my_model_fixed.stl | Fixes:  |
-| 2026-04-20 11:19:23 | Analyze | broken_spaceship.stl | 650 verts, 1,277 faces, 2 issues found, 2 auto-fixable |
-| 2026-04-20 11:19:23 | Format Recommendation | — | Blender → Unreal Engine (2 formats suggested) |
-| 2026-04-20 11:19:23 | Auto-Fix | broken_spaceship.stl | Output: broken_spaceship_fixed.glb | Fixes: Scaled down (assumed meters -> millimeters), Filled holes and repaired mesh |
-| 2026-04-20 11:19:23 | Analyze | clean_character.stl | 1,922 verts, 3,840 faces, 0 issues found, 0 auto-fixable |
-| 2026-04-20 11:19:23 | Format Recommendation | — | Maya → PrusaSlicer (2 formats suggested) |
+| Timestamp | Action | File | Details | What the Program Did |
+|-----------|--------|------|---------|----------------------|
+| 2026-04-20 11:17:33 | Analyze | my_model.stl | 8 verts, 12 faces, 0 issues found, 0 auto-fixable | The program loaded the model file and inspected its geometry. It checked vertex and face counts, tested whether the mesh is watertight (no holes), looked for inverted normals, degenerate faces, duplicate faces, scale mismatches, and disconnected debris. Any issues found are flagged with severity levels and marked as auto-fixable where possible. |
+| 2026-04-20 11:17:33 | Format Recommendation | — | Blender → Cura (2 formats suggested) | The program looked up the source and target applications selected by the user and matched them against the knowledge base of known transfer issues. It ranked the best export formats for that specific app-to-app workflow and listed any known problems the user should expect. |
+| 2026-04-20 11:17:33 | Auto-Fix | my_model.stl | Output: my_model_fixed.stl | Fixes: none needed | The program applied targeted repairs to the model based on what the analysis detected. No issues were found so the model was exported clean to the chosen format. |
+| 2026-04-20 11:19:23 | Analyze | broken_spaceship.stl | 650 verts, 1,277 faces, 2 issues found, 2 auto-fixable | The program loaded the model file and inspected its geometry. It detected 2 issues: an extreme scale mismatch (model was 80,000 units — likely exported in meters instead of millimeters) and a non-watertight mesh with holes from removed faces. Both were flagged as auto-fixable. |
+| 2026-04-20 11:19:23 | Format Recommendation | — | Blender → Unreal Engine (2 formats suggested) | The program matched the Blender → Unreal Engine workflow against the knowledge base and ranked FBX first (industry standard for game engines with animation support) and GLTF/GLB second (modern PBR-ready alternative). |
+| 2026-04-20 11:19:23 | Auto-Fix | broken_spaceship.stl | Output: broken_spaceship_fixed.glb | Fixes: Scaled down (assumed meters -> millimeters), Filled holes and repaired mesh | The program applied targeted repairs: first it rescaled the model by 0.001x to convert from meters to millimeters, then used trimesh's repair tools to fill the open holes and recalculate normals so the mesh closes properly. The repaired model was exported as GLB. |
+| 2026-04-20 11:19:23 | Analyze | clean_character.stl | 1,922 verts, 3,840 faces, 0 issues found, 0 auto-fixable | The program loaded the model file and inspected its geometry. All checks passed — the mesh is watertight, normals are consistent, scale is within normal range, and no degenerate or duplicate faces were detected. This model is ready for transfer with no repairs needed. |
+| 2026-04-20 11:19:23 | Format Recommendation | — | Maya → PrusaSlicer (2 formats suggested) | The program matched the Maya → PrusaSlicer workflow against the knowledge base. Since PrusaSlicer is a 3D print slicer, it ranked STL first (universal printing format supported by all slicers) and OBJ second as a fallback option. |
