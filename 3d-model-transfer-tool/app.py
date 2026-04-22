@@ -61,7 +61,7 @@ def write_log(action, filename=None, details=None):
     """Append an entry to the markdown activity log."""
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     if not os.path.exists(LOG_FILE):
-        with open(LOG_FILE, 'w') as f:
+        with open(LOG_FILE, 'w', encoding='utf-8') as f:
             f.write('# 3D Model Transfer Assistant — Activity Log\n\n')
             f.write('## Why the Program Uses the Fixes It Does\n\n')
             f.write('See the Fix Explanations section below the session log.\n\n')
@@ -73,7 +73,7 @@ def write_log(action, filename=None, details=None):
     file_col = filename or '—'
     detail_col = details or '—'
     explanation = EXPLANATIONS.get(action, 'The program completed the requested operation.')
-    with open(LOG_FILE, 'a') as f:
+    with open(LOG_FILE, 'a', encoding='utf-8') as f:
         f.write(f'| {timestamp} | {action} | {file_col} | {detail_col} | {explanation} |\n')
 
 
