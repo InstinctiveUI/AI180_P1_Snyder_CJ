@@ -1,28 +1,9 @@
-# Cycle 3: The Remix
+# Cycle 3: Push
 ## CJ Snyder | AI 180
 
-**Goal:** Prove the idea survives transformation. Remix your strongest response from Cycle 1 or 2 through a technique you have not used yet.
+**Goal:** Remix wht I have created 
 
----
-
-## Before *(Declare step — written in class)*
-
-**Source Response:** Cycle ___ (explain why this is your strongest)
-
-**Defixation Technique:**
-<!-- Must be different from both Cycle 1 and Cycle 2. -->
-
-*[Technique name here.]*
-
-**AI Decision:**
-<!-- What will AI make? What stays yours? Be specific. -->
-
-*[Your AI Decision here.]*
-
-**What larger system does your creative problem live inside?**
-<!-- Name the actors, forces, or structures that shape whether it gets solved or stays stuck. This becomes your P3 map. -->
-
-*[System description here.]*
+I am creating a way to differ different issues that arise with transfering 3d assets from programs
 
 ---
 
@@ -30,32 +11,24 @@
 
 **What I prompted:**
 
-*[Log your key prompts here.]*
-
+I promted Claude to create a log for my program so that we can see how exactly it fixes and changes the files
 **What AI produced:**
 
-*[Describe or paste key AI outputs here.]*
+It helped produced a simple Markdown file as a log for the program
 
 **What I kept, changed, or rejected:**
 
-*[Document your directing decisions here.]*
+I kept the log because it was a simple addition that did not change anything but improved the program
 
 ---
 
-## After *(Document step — written in class)*
-
 **What happened vs. what I intended:**
 
-*[Reflect here.]*
+What heppend actually went a lot smoother that what I expected and Cluade was very helpful 
 
 **Did the technique break fixation?**
 
-*[Yes/No — and explain the moment it happened, or why it didn't.]*
+This helped me a ton with any future projects but I do not believe it broke any techniques 
 
 **Did my AI Decision hold?**
-
-*[Yes/No — explain.]*
-
-**Original vs. Remix — what survived? What transformed?**
-
-*[Reflect here. This is the peer crit comparison.]*
+Yes my decision to use AI for the simple part help and worked as planned
