@@ -1,0 +1,39 @@
+---
+layout: elk
+title: Life cycle of 3D model
+---
+flowchart TB
+    subgraph C1["Creation of 3D Model"]
+        A1["Idea is known"]
+        A2["3D model is shaped and formed"]
+        A3["Material is placed on model"]
+        A4["Model is exported"]
+        A1 --> A2 --> A3 --> A4
+    end
+
+    subgraph P1["Use of Python Program"]
+        B1["File is plugged into the program"]
+        B2["File is transferred to correct format"]
+        B1 --> B2
+    end
+
+    subgraph U1["Use of 3D Model"]
+        C2["Troubleshoot for any errors during transfer"]
+        C3["3D model is imported"]
+        C4["3D model is programmed for use"]
+        C2 --> C3 --> C4
+    end
+
+    %% Flow between stages
+    C1 --> P1 --> U1
+    %% Feedback loop
+    U1 -->|Feedback / Revisions| C1
+
+    %% Styling
+    classDef indigo stroke:#818cf8,fill:#eef2ff
+    classDef teal stroke:#2dd4bf,fill:#f0fdfa
+    classDef violet stroke:#a78bfa,fill:#f5f3ff
+    
+    class C1 indigo
+    class P1 teal
+    class U1 violet
