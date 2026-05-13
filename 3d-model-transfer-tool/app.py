@@ -11,6 +11,7 @@ from knowledge_base import (
     get_recommended_format, get_relevant_issues, APP_CATEGORIES,
     FORMAT_INFO, KEY_CAUSES, RECOMMENDED_TOOLS, TRANSFER_ISSUES, PRINT_ISSUES
 )
+from claude_ai import get_analysis_summary, get_ai_format_advice, chat as claude_chat
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB max upload
@@ -167,7 +168,5 @@ def download_fixed(filename):
     return send_from_directory(FIXED_DIR, filename, as_attachment=True)
 
 
-if __name__ == '__main__':
-    print("\n  3D Model Transfer Assistant")
-    print("  Open http://localhost:5000 in your browser\n")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+# ---------------------------------------------------------------------------
+# AI endpoints (Ant

@@ -3,3 +3,4 @@ trimesh>=4.0
 numpy
 scipy
 networkx
+anthropic>=0.25
