@@ -3,13 +3,15 @@
 Inspects uploaded model files for common transfer issues and attempts to repair them.
 """
 import os
-import trimesh
-import numpy as np
-import json
+# trimesh and numpy are imported lazily inside each function so they don't
+# block the Vercel cold start. scipy/networkx (150 MB+) only load on first use.
 
 
 def analyze_model(filepath):
     """Analyze a 3D model file and return a detailed report."""
+    import trimesh
+    import numpy as np
+
     report = {
         "filename": os.path.basename(filepath),
         "format": os.path.splitext(filepath)[1].lower().strip('.'),
@@ -226,6 +228,9 @@ def analyze_model(filepath):
 
 def fix_model(filepath, fixes_to_apply, output_format="stl"):
     """Apply fixes to a model and export the repaired version."""
+    import trimesh
+    import numpy as np
+
     try:
         loaded = trimesh.load(filepath, force=None)
     except Exception as e:
