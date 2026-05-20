@@ -6,6 +6,7 @@ import os
 import json
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory
+from werkzeug.utils import secure_filename
 from analyzer import analyze_model, fix_model
 from knowledge_base import (
     get_recommended_format, get_relevant_issues, APP_CATEGORIES,
@@ -129,7 +130,11 @@ def analyze():
     if file.filename == '' or not allowed_file(file.filename):
         return jsonify({"error": f"Invalid file. Supported: {', '.join(ALLOWED_EXTENSIONS)}"}), 400
 
-    filepath = os.path.join(UPLOAD_DIR, file.filename)
+    safe_name = secure_filename(file.filename)
+    if not safe_name:
+        return jsonify({"error": "Invalid filename."}), 400
+
+    filepath = os.path.join(UPLOAD_DIR, safe_name)
     file.save(filepath)
 
     report = analyze_model(filepath)
@@ -146,7 +151,9 @@ def analyze():
 @app.route('/api/fix', methods=['POST'])
 def fix():
     data = request.json
-    filename = data.get('filename', '')
+    filename = secure_filename(data.get('filename', ''))
+    if not filename:
+        return jsonify({"error": "Invalid filename."}), 400
     fixes = data.get('fixes', [])
     output_format = data.get('output_format', 'stl')
 
@@ -158,12 +165,4 @@ def fix():
     if result.get('success'):
         applied = ', '.join(result.get('applied_fixes', []))
         write_log('Auto-Fix', filename=filename,
-                  details=f'Output: {result.get("output_file")} | Fixes: {applied}')
-    else:
-        write_log('Auto-Fix FAILED', filename=filename, details=result.get('error', 'Unknown error'))
-    return jsonify(result)
-
-
-@app.route('/api/download/<filename>')
-def download_fixed(filename):
-    write_log('Downloa
+                  details=f'Output: {result.get("o
