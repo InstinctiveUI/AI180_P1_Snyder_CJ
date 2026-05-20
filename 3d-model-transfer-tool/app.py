@@ -181,6 +181,28 @@ def download_fixed(filename):
 
 
 # ---------------------------------------------------------------------------
+# Health / debug endpoint (safe to call publicly — no secrets exposed)
+# ---------------------------------------------------------------------------
+
+@app.route('/api/health')
+def health():
+    """Lightweight liveness check that also surfaces template/path info."""
+    import sys
+    tmpl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates', 'index.html')
+    return jsonify({
+        "status": "ok",
+        "python": sys.version,
+        "is_vercel": _IS_VERCEL,
+        "cwd": os.getcwd(),
+        "file": __file__,
+        "template_path": tmpl_path,
+        "template_exists": os.path.exists(tmpl_path),
+        "upload_dir_exists": os.path.exists(UPLOAD_DIR),
+        "fixed_dir_exists": os.path.exists(FIXED_DIR),
+    })
+
+
+# ---------------------------------------------------------------------------
 # AI endpoints (Anthropic Claude)
 # ---------------------------------------------------------------------------
 
