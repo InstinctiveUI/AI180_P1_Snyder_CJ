@@ -15,9 +15,10 @@ try:
     _spec.loader.exec_module(_module)
     app = _module.app
 except Exception as e:
+    _err_msg = str(e)          # capture before Python 3 deletes 'e' on except-block exit
     _tb = traceback.format_exc()
 
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
     def catch_all(path):
-        return jsonify({"startup_error": str(e), "traceback": _tb}), 500
+        return jsonify({"startup_error": _err_msg, "traceback": _tb}), 500
