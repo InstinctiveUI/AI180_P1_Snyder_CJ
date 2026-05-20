@@ -15,10 +15,10 @@ from knowledge_base import (
 from claude_ai import get_analysis_summary, get_ai_format_advice, chat as claude_chat
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024 if _IS_VERCEL else 200 * 1024 * 1024  # 4MB on Vercel, 200MB local
 
 # Use /tmp on Vercel (serverless read-only filesystem), local dirs otherwise
 _IS_VERCEL = os.environ.get('VERCEL') == '1'
+app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024 if _IS_VERCEL else 200 * 1024 * 1024  # 4MB on Vercel, 200MB local
 UPLOAD_DIR = '/tmp/uploads' if _IS_VERCEL else os.path.join(os.path.dirname(__file__), 'uploads')
 FIXED_DIR  = '/tmp/fixed'   if _IS_VERCEL else os.path.join(os.path.dirname(__file__), 'fixed')
 os.makedirs(UPLOAD_DIR, exist_ok=True)
