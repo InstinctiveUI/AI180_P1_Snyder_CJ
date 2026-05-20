@@ -52,7 +52,8 @@ def analyze_model(filepath):
         report["warnings"].append("File loaded as an unsupported type. Attempting to process anyway.")
         try:
             mesh = loaded.to_mesh() if hasattr(loaded, 'to_mesh') else None
-        except:
+        except Exception as e:
+            report["warnings"].append(f"Could not convert object to mesh: {e}")
             mesh = None
         if mesh is None:
             report["issues"].append({
@@ -136,8 +137,8 @@ def analyze_model(filepath):
                     "fix_action": "fix_normals"
                 })
                 report["fixable"].append("fix_normals")
-        except:
-            pass
+        except Exception as e:
+            report["warnings"].append(f"Could not check inverted normals: {e}")
 
     # Winding consistency check
     try:
@@ -151,8 +152,8 @@ def analyze_model(filepath):
                 "fix_action": "fix_winding"
             })
             report["fixable"].append("fix_winding")
-    except:
-        pass
+    except Exception as e:
+        report["warnings"].append(f"Could not check winding consistency: {e}")
 
     # 4. Degenerate faces
     non_degen = mesh.nondegenerate_faces
@@ -182,8 +183,8 @@ def analyze_model(filepath):
                 "fix_action": "remove_duplicates"
             })
             report["fixable"].append("remove_duplicates")
-    except:
-        pass
+    except Exception as e:
+        report["warnings"].append(f"Could not check duplicate faces: {e}")
 
     # 6. High poly count warning
     if len(mesh.faces) > 500000:
@@ -213,8 +214,8 @@ def analyze_model(filepath):
                     "fix_action": "remove_debris"
                 })
                 report["fixable"].append("remove_debris")
-    except:
-        pass
+    except Exception as e:
+        report["warnings"].append(f"Could not check disconnected components: {e}")
 
     # If no issues found
     if not report["issues"]:
@@ -298,8 +299,8 @@ def fix_model(filepath, fixes_to_apply, output_format="stl"):
         try:
             mesh = mesh.simplify_quadric_decimation(target)
             applied_fixes.append(f"Decimated to {len(mesh.faces):,} faces")
-        except:
-            applied_fixes.append("Decimation not available (install fast_simplification for this feature)")
+        except Exception as e:
+            applied_fixes.append(f"Decimation failed: {e}")
 
     # Export
     basename = os.path.splitext(os.path.basename(filepath))[0]
@@ -313,16 +314,4 @@ def fix_model(filepath, fixes_to_apply, output_format="stl"):
     try:
         mesh.export(output_path, file_type=output_format.lower())
     except Exception as e:
-        return {"success": False, "error": f"Export failed: {str(e)}"}
-
-    return {
-        "success": True,
-        "output_file": output_name,
-        "output_path": output_path,
-        "applied_fixes": applied_fixes,
-        "new_stats": {
-            "vertices": len(mesh.vertices),
-            "faces": len(mesh.faces),
-            "is_watertight": bool(mesh.is_watertight),
-        }
-    }
+        return 
