@@ -6,8 +6,8 @@
       "use": "@vercel/python",
       "config": {
         "includeFiles": [
-          "3d-model-transfer-tool/templates/**",
-          "3d-model-transfer-tool/static/**"
+          "templates/**",
+          "*.py"
         ]
       }
     }
