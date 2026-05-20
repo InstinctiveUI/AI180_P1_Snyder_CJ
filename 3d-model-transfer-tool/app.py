@@ -165,4 +165,60 @@ def fix():
     if result.get('success'):
         applied = ', '.join(result.get('applied_fixes', []))
         write_log('Auto-Fix', filename=filename,
-     
+                       details=f'Output: {result.get("output_file")} | Fixes: {applied}')
+    else:
+        write_log('Auto-Fix FAILED', filename=filename, details=result.get('error', 'Unknown error'))
+    return jsonify(result)
+
+
+@app.route('/api/download/<filename>')
+def download_fixed(filename):
+    safe_name = secure_filename(filename)
+    if not safe_name:
+        return jsonify({"error": "Invalid filename."}), 400
+    write_log('Download', filename=safe_name, details='User downloaded fixed model')
+    return send_from_directory(FIXED_DIR, safe_name, as_attachment=True)
+
+
+# ---------------------------------------------------------------------------
+# AI endpoints (Anthropic Claude)
+# ---------------------------------------------------------------------------
+
+@app.route('/api/ai/summary', methods=['POST'])
+def ai_summary():
+    """Return a plain-English AI summary of an analysis report."""
+    data = request.json or {}
+    report = data.get('report', {})
+    source = data.get('source_app', '')
+    target = data.get('target_app', '')
+    result = get_analysis_summary(report, source, target)
+    return jsonify(result)
+
+
+@app.route('/api/ai/format', methods=['POST'])
+def ai_format():
+    """Return AI-powered format advice for a source->target workflow."""
+    data = request.json or {}
+    source = data.get('source_app', '')
+    target = data.get('target_app', '')
+    stats = data.get('model_stats')
+    if not source or not target:
+        return jsonify({'error': 'source_app and target_app are required'}), 400
+    result = get_ai_format_advice(source, target, stats)
+    return jsonify(result)
+
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    """Multi-turn chat endpoint powered by Claude."""
+    data = request.json or {}
+    messages = data.get('messages', [])
+    context = data.get('context')
+    result = claude_chat(messages, context)
+    return jsonify(result)
+
+
+if __name__ == '__main__':
+    print("\n  3D Model Transfer Assistant")
+    print("  Open http://localhost:5000 in your browser\n")
+    app.run(debug=True, host='0.0.0.0', port=5000)
