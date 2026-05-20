@@ -18,7 +18,7 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB max upload
 
 # Use /tmp on Vercel (serverless read-only filesystem), local dirs otherwise
-_IS_VERCEL = os.environ.get('VERCEL', False)
+_IS_VERCEL = os.environ.get('VERCEL') == '1'
 UPLOAD_DIR = '/tmp/uploads' if _IS_VERCEL else os.path.join(os.path.dirname(__file__), 'uploads')
 FIXED_DIR  = '/tmp/fixed'   if _IS_VERCEL else os.path.join(os.path.dirname(__file__), 'fixed')
 os.makedirs(UPLOAD_DIR, exist_ok=True)
