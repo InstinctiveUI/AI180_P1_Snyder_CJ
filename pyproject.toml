@@ -1,6 +1,0 @@
-[project]
-name = "3d-model-transfer-tool"
-version = "0.1.0"
-
-[project.scripts]
-app = "transfer_tool:app"
