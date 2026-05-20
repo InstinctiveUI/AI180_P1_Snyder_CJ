@@ -15,7 +15,7 @@ from knowledge_base import (
 from claude_ai import get_analysis_summary, get_ai_format_advice, chat as claude_chat
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB max upload
+app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024 if _IS_VERCEL else 200 * 1024 * 1024  # 4MB on Vercel, 200MB local
 
 # Use /tmp on Vercel (serverless read-only filesystem), local dirs otherwise
 _IS_VERCEL = os.environ.get('VERCEL') == '1'
@@ -165,4 +165,4 @@ def fix():
     if result.get('success'):
         applied = ', '.join(result.get('applied_fixes', []))
         write_log('Auto-Fix', filename=filename,
-                  details=f'Output: {result.get("o
+     
