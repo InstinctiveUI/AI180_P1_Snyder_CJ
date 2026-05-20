@@ -16,14 +16,16 @@ from claude_ai import get_analysis_summary, get_ai_format_advice, chat as claude
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB max upload
 
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'uploads')
-FIXED_DIR = os.path.join(os.path.dirname(__file__), 'fixed')
+# Use /tmp on Vercel (serverless read-only filesystem), local dirs otherwise
+_IS_VERCEL = os.environ.get('VERCEL', False)
+UPLOAD_DIR = '/tmp/uploads' if _IS_VERCEL else os.path.join(os.path.dirname(__file__), 'uploads')
+FIXED_DIR  = '/tmp/fixed'   if _IS_VERCEL else os.path.join(os.path.dirname(__file__), 'fixed')
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(FIXED_DIR, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {'stl', 'obj', 'fbx', 'glb', 'gltf', 'ply', 'dae', '3ds'}
 
-LOG_FILE = os.path.join(os.path.dirname(__file__), 'activity_log.md')
+LOG_FILE = '/tmp/activity_log.md' if _IS_VERCEL else os.path.join(os.path.dirname(__file__), 'activity_log.md')
 
 
 EXPLANATIONS = {
@@ -164,9 +166,4 @@ def fix():
 
 @app.route('/api/download/<filename>')
 def download_fixed(filename):
-    write_log('Download', filename=filename, details='User downloaded fixed model')
-    return send_from_directory(FIXED_DIR, filename, as_attachment=True)
-
-
-# ---------------------------------------------------------------------------
-# AI endpoints (Ant
+    write_log('Downloa
