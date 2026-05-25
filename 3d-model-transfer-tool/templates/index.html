@@ -663,6 +663,31 @@ async function fetchAIFormatAdvice(src,tgt,stats){
 
 function buildCtx(){if(!analysisReport)return null;return{filename:analysisReport.filename,source_app:document.getElementById('sourceApp').value||'',target_app:document.getElementById('targetApp').value||'',stats:analysisReport.stats,issues:analysisReport.issues};}
 function addMsg(role,text){const m=document.getElementById('chatMessages'),d=document.createElement('div');d.className='msg '+role;d.textContent=text;m.appendChild(d);m.scrollTop=m.scrollHeight;}
-
 async function sendChat(){
-  const inp=document.getElementById('chatInput'),tex
+  const inp=document.getElementById('chatInput'),text=inp.value.trim();
+  if(!text)return;
+  addMsg('user',text);
+  chatHistory.push({role:'user',content:text});
+  inp.value='';inp.style.height='auto';
+  document.getElementById('sendBtn').disabled=true;
+  document.getElementById('typingIndicator').classList.add('show');
+  try{
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory,context:buildCtx()})});
+    const d=await r.json();
+    const reply=d.reply||d.error||'No response.';
+    addMsg('assistant',reply);
+    chatHistory.push({role:'assistant',content:reply});
+  }catch(e){addMsg('sys','Error: '+e.message);}
+  document.getElementById('sendBtn').disabled=false;
+  document.getElementById('typingIndicator').classList.remove('show');
+}
+
+document.getElementById('sendBtn').addEventListener('click',sendChat);
+document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+document.getElementById('chatInput').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px';});
+
+const obs=new IntersectionObserver(entries=>{entries.forEach(el=>{if(el.isIntersecting)el.target.classList.add('vis');});},{threshold:.07});
+document.querySelectorAll('.fi').forEach(el=>{el.classList.add('hidden');obs.observe(el);});
+</script>
+</body>
+</html>
