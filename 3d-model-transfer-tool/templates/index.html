@@ -60,6 +60,15 @@
     .bg-lite .rw{color:#8a7a6a;}
     .bg-lite .rt{color:#2a2218;}
     .bg-lite .rb{color:#6a5e50;}
+    .bg-lite .pgrid{background:#c4b8a8;border-color:#c4b8a8;}
+    .bg-lite .pc{background:#ede8de;}.bg-lite .pc:hover{background:#e2dcd0;}
+    .bg-lite .pn{color:#8a7a6a;}.bg-lite .pm{color:#2a2218;}.bg-lite .pd{color:#6a5e50;}
+    .bg-lite .fqt{border-color:#c4b8a8;}
+    .bg-lite .fqr{background:#ede8de;border-bottom-color:#c4b8a8;}
+    .bg-lite .fqr:hover{background:#e2dcd0;}
+    .bg-lite .fqq{color:#6a5e50;}.bg-lite .fqa{color:#4a3a2a;}.bg-lite .fqc{color:#2a7a4e;}
+    .bg-lite .disc{background:#f0ebe2;border-color:#c4b8a8;color:#6a5e50;}
+    .bg-lite .disc strong{color:#4a3a2a;}
 
     /* PROSE */
     .prose{max-width:660px;font-family:var(--serif);font-size:17px;line-height:1.82;color:#6a90b8;}
@@ -280,7 +289,7 @@
 </div>
 
 <!-- §01 PROBLEM -->
-<section id="problem" class="bs bg-lite fi">
+<section id="problem" class="bs bg-a fi">
   <div class="si">
     <div class="sec-hd"><span class="sec-num">01</span><h2 class="sec-title">The Problem</h2></div>
     <div class="prose">
@@ -425,7 +434,7 @@
 </section>
 
 <!-- §04 PROCESS -->
-<section id="process" class="bs bg-c fi">
+<section id="process" class="bs bg-lite fi">
   <div class="si">
     <div class="sec-hd"><span class="sec-num">04</span><h2 class="sec-title">The Process</h2></div>
     <div class="prose"><p>P3 was developed using the Epistemic Stewardship Framework — a five-phase process that keeps thinking on the human side by requiring a position before AI enters the work.</p></div>
@@ -658,13 +667,4 @@ async function sendChat(){
   document.getElementById('chatTyping').classList.add('show');
   document.getElementById('chatSendBtn').disabled=true;
   try{
-    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory,context:buildCtx()})});
-    const d=await r.json();const reply=d.reply||d.error||'No response.';
-    chatHistory.push({role:'assistant',content:reply});addMsg('assistant',reply);
-  }catch(e){addMsg('assistant','Error: '+e.message);}
-  document.getElementById('chatTyping').classList.remove('show');
-  document.getElementById('chatSendBtn').disabled=false;
-  inp.focus();
-}
-document.getElementById('chatSendBtn').addEventListener('click',sendChat);
-document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatH
