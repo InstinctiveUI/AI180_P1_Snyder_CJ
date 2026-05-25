@@ -8,10 +8,10 @@
   JS functions live on window.PE so HTML onclick attributes can reach them
   without polluting global names.
 #}
-<div class="pe">
+<div class="pe pe-embed">
 
 <style>
-  /* ── Scoped variables and container ── */
+  /* ── Scoped variables (apply to every .pe scope, including the panel host) ── */
   .pe {
     --pe-bg: #0d0f1a;
     --pe-surface: #151828;
@@ -27,10 +27,15 @@
     --pe-glow-blue: rgba(79,156,249,0.25);
     --pe-glow-purple: rgba(167,139,250,0.25);
     --pe-glow-green: rgba(52,211,153,0.25);
-
-    background: var(--pe-bg);
     color: var(--pe-text);
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  .pe * { box-sizing: border-box; }
+  .pe h1, .pe h2, .pe h3 { margin: 0; line-height: 1.2; }
+
+  /* ── Visual embed container (only the main wrapper, NOT the panel host) ── */
+  .pe.pe-embed {
+    background: var(--pe-bg);
     border-radius: 12px;
     border: 1px solid #0e1f34;
     overflow: hidden;
@@ -38,8 +43,6 @@
     display: block;
     width: 100%;
   }
-  .pe * { box-sizing: border-box; }
-  .pe h1, .pe h2, .pe h3 { margin: 0; line-height: 1.2; }
 
   /* ── Header ── */
   .pe .header {
@@ -1069,7 +1072,27 @@
   // Expose to global so onclick handlers can reach the functions
   window.PE = { openPanel, closePanel, navigatePanel, markDone, toggleCheck, filterPhase };
 
+  // ── Detach the detail panel + overlay from the embed wrapper ──
+  // The host page nests this fragment inside an ancestor that has a CSS
+  // transform set (used for scroll-triggered animations). Any non-none
+  // transform on an ancestor establishes a new containing block for
+  // position:fixed descendants, which would pin the panel to the section
+  // instead of the viewport. Moving the panel to <body> (inside a fresh
+  // .pe wrapper so the scoped styles still apply) fixes this.
+  function detachToBody() {
+    const overlay = $('pe-overlay');
+    const panel = $('pe-detailPanel');
+    if (!overlay || !panel || panel.parentElement === document.body || panel.parentElement?.dataset.peHost === '1') return;
+    const host = document.createElement('div');
+    host.className = 'pe';
+    host.dataset.peHost = '1';
+    host.appendChild(overlay);
+    host.appendChild(panel);
+    document.body.appendChild(host);
+  }
+
   // Init
+  detachToBody();
   updateProgress();
 })();
 </script>
