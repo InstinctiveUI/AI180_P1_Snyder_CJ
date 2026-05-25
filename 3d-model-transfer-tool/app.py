@@ -3,6 +3,11 @@
 """
 import os
 import sys
+
+# Ensure local modules (analyzer, knowledge_base, claude_ai) are importable
+# on Vercel, where the function directory may not be on sys.path by default.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
