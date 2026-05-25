@@ -47,6 +47,20 @@
     .sec-title{font-family:var(--serif);font-size:clamp(26px,3.8vw,46px);font-weight:400;letter-spacing:-.01em;color:var(--b-accent);}
     .bg-a{background:#06101e;}.bg-b{background:#080f20;}.bg-c{background:#0b1228;}.bg-d{background:#07101f;}.bg-e{background:#091422;}
 
+    /* light sections — same eggshell as tool */
+    .bg-lite{background:#f5f0e8;border-bottom-color:#c4b8a8 !important;}
+    .bg-lite .sec-title{color:#2a2218;}
+    .bg-lite .sec-num{color:#8aa870;}
+    .bg-lite .prose{color:#6a5e50;}
+    .bg-lite .pq{border-left-color:#2a7a4e;color:#3a5a3a;}
+    .bg-lite .rl{border-color:#c4b8a8;}
+    .bg-lite .ri{background:#ede8de;border-bottom-color:#c4b8a8;}
+    .bg-lite .ri:hover{background:#e2dcd0;}
+    .bg-lite .rn{color:#2a7a4e;}
+    .bg-lite .rw{color:#8a7a6a;}
+    .bg-lite .rt{color:#2a2218;}
+    .bg-lite .rb{color:#6a5e50;}
+
     /* PROSE */
     .prose{max-width:660px;font-family:var(--serif);font-size:17px;line-height:1.82;color:#6a90b8;}
     .prose p+p{margin-top:20px;}
@@ -266,7 +280,7 @@
 </div>
 
 <!-- §01 PROBLEM -->
-<section id="problem" class="bs bg-a fi">
+<section id="problem" class="bs bg-lite fi">
   <div class="si">
     <div class="sec-hd"><span class="sec-num">01</span><h2 class="sec-title">The Problem</h2></div>
     <div class="prose">
@@ -427,7 +441,7 @@
 </section>
 
 <!-- §05 RESISTANCE -->
-<section id="resistance" class="bs bg-d fi">
+<section id="resistance" class="bs bg-lite fi">
   <div class="si">
     <div class="sec-hd"><span class="sec-num">05</span><h2 class="sec-title">Records of Resistance</h2></div>
     <div class="prose"><p>Three documented moments where I rejected or substantially revised AI output. These records make the creative judgment visible — not what the AI produced, but what I decided not to use and why.</p></div>
@@ -654,14 +668,3 @@ async function sendChat(){
 }
 document.getElementById('chatSendBtn').addEventListener('click',sendChat);
 document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
-document.getElementById('chatInput').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px';});
-
-// fade-in
-const obs=new IntersectionObserver(entries=>{entries.forEach(el=>{if(el.isIntersecting){el.target.classList.add('vis');}});},{threshold:.07});
-document.querySelectorAll('.fi').forEach(el=>{el.classList.add('hidden');obs.observe(el);});
-
-// active nav
-window.addEventListener('scroll',()=>{
-  let cur='';
-  document.querySelectorAll('section[id]').forEach(s=>{if(window.scrollY>=s.offsetTop-130)cur=s.id||'';});
-  doc
