@@ -1,0 +1,1075 @@
+{#
+  _pipeline_embed.html
+  Interactive 3D Model Lifecycle Pipeline, scoped embed fragment.
+  Include from any template via: {% include '_pipeline_embed.html' %}
+
+  All CSS is scoped under .pe (the wrapper class).
+  All IDs are prefixed pe- to avoid collisions with the host page.
+  JS functions live on window.PE so HTML onclick attributes can reach them
+  without polluting global names.
+#}
+<div class="pe">
+
+<style>
+  /* ── Scoped variables and container ── */
+  .pe {
+    --pe-bg: #0d0f1a;
+    --pe-surface: #151828;
+    --pe-surface2: #1c2038;
+    --pe-border: #2a2f50;
+    --pe-accent-blue: #4f9cf9;
+    --pe-accent-purple: #a78bfa;
+    --pe-accent-green: #34d399;
+    --pe-accent-orange: #fb923c;
+    --pe-text: #e2e8f0;
+    --pe-text-muted: #8892b0;
+    --pe-text-dim: #4a5275;
+    --pe-glow-blue: rgba(79,156,249,0.25);
+    --pe-glow-purple: rgba(167,139,250,0.25);
+    --pe-glow-green: rgba(52,211,153,0.25);
+
+    background: var(--pe-bg);
+    color: var(--pe-text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    border-radius: 12px;
+    border: 1px solid #0e1f34;
+    overflow: hidden;
+    position: relative;
+    display: block;
+    width: 100%;
+  }
+  .pe * { box-sizing: border-box; }
+  .pe h1, .pe h2, .pe h3 { margin: 0; line-height: 1.2; }
+
+  /* ── Header ── */
+  .pe .header {
+    padding: 28px 16px 20px;
+    border-bottom: 1px solid var(--pe-border);
+    background: linear-gradient(180deg, #0a0c18 0%, var(--pe-bg) 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .pe .header-title { display: flex; flex-direction: column; gap: 4px; }
+  .pe .header-tag {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--pe-accent-blue);
+    font-weight: 600;
+  }
+  .pe .header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, var(--pe-accent-blue) 60%, var(--pe-accent-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .pe .header-sub { font-size: 13px; color: var(--pe-text-muted); }
+
+  /* ── Progress Bar ── */
+  .pe .progress-bar-wrap {
+    padding: 14px 16px;
+    background: var(--pe-surface);
+    border-bottom: 1px solid var(--pe-border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .pe .progress-label { font-size: 12px; color: var(--pe-text-muted); white-space: nowrap; }
+  .pe .progress-track {
+    flex: 1;
+    height: 6px;
+    background: var(--pe-border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .pe .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--pe-accent-blue), var(--pe-accent-purple));
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+  .pe .progress-count {
+    font-size: 12px;
+    color: var(--pe-text-muted);
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: right;
+  }
+
+  /* ── Phase Legend ── */
+  .pe .legend {
+    display: flex;
+    gap: 24px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--pe-border);
+    flex-wrap: wrap;
+  }
+  .pe .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--pe-text-muted);
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  .pe .legend-item:hover {
+    border-color: var(--pe-border);
+    background: var(--pe-surface);
+  }
+  .pe .legend-item.active {
+    border-color: currentColor;
+    background: var(--pe-surface2);
+    color: var(--pe-text);
+  }
+  .pe .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── Main Layout ── */
+  .pe .main { padding: 24px 16px; display: flex; flex-direction: column; gap: 0; }
+
+  /* ── Swimlane ── */
+  .pe .swimlane { display: flex; align-items: stretch; border-radius: 0; position: relative; }
+  .pe .swimlane:first-child .lane-body { border-radius: 16px 16px 0 0; }
+  .pe .swimlane:last-child .lane-body {
+    border-radius: 0 0 16px 16px;
+    border-bottom: 1px solid var(--pe-border);
+  }
+  .pe .lane-label {
+    width: 140px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 12px;
+    gap: 8px;
+    border-right: 1px solid var(--pe-border);
+    background: var(--pe-surface2);
+    position: relative;
+  }
+  .pe .swimlane:first-child .lane-label {
+    border-radius: 16px 0 0 0;
+    border-top: 1px solid var(--pe-border);
+  }
+  .pe .swimlane:last-child .lane-label {
+    border-radius: 0 0 0 16px;
+    border-bottom: 1px solid var(--pe-border);
+  }
+  .pe .lane-label-inner {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--pe-text-muted);
+  }
+  .pe .lane-icon { font-size: 22px; line-height: 1; }
+  .pe .lane-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 24px 28px;
+    gap: 0;
+    background: var(--pe-surface);
+    border-top: 1px solid var(--pe-border);
+    border-right: 1px solid var(--pe-border);
+    min-height: 130px;
+    position: relative;
+  }
+
+  /* ── Phase Divider ── */
+  .pe .phase-divider {
+    display: flex;
+    align-items: center;
+    padding: 0 16px 0 156px;
+    gap: 0;
+    margin-top: 24px;
+    margin-bottom: 8px;
+  }
+  .pe .phase-block { display: flex; align-items: center; gap: 8px; cursor: pointer; transition: opacity 0.2s; }
+  .pe .phase-block:hover { opacity: 0.8; }
+  .pe .phase-pill {
+    padding: 4px 14px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px solid;
+  }
+  .pe .phase-arrow {
+    color: var(--pe-text-dim);
+    font-size: 20px;
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+
+  /* ── Step Card ── */
+  .pe .step {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+  .pe .step-card {
+    flex: 1;
+    min-width: 0;
+    background: var(--pe-surface2);
+    border: 1.5px solid var(--pe-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .pe .step-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--step-color, var(--pe-accent-blue));
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .pe .step-card:hover {
+    border-color: var(--step-color, var(--pe-accent-blue));
+    box-shadow: 0 0 20px var(--step-glow, var(--pe-glow-blue));
+    transform: translateY(-2px);
+  }
+  .pe .step-card:hover::before { opacity: 1; }
+  .pe .step-card.active {
+    border-color: var(--step-color, var(--pe-accent-blue));
+    box-shadow: 0 0 24px var(--step-glow, var(--pe-glow-blue));
+    background: var(--pe-bg);
+  }
+  .pe .step-card.active::before { opacity: 1; }
+  .pe .step-card.done {
+    border-color: var(--pe-accent-green) !important;
+    opacity: 0.75;
+  }
+  .pe .step-card.done::before {
+    background: var(--pe-accent-green) !important;
+    opacity: 1;
+  }
+  .pe .step-num {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--step-color, var(--pe-accent-blue));
+    opacity: 0.7;
+  }
+  .pe .step-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--pe-text);
+    line-height: 1.3;
+  }
+  .pe .step-done-badge {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--pe-accent-green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+  }
+  .pe .step-card.done .step-done-badge { opacity: 1; transform: scale(1); }
+
+  /* ── Connector ── */
+  .pe .connector {
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    flex-shrink: 0;
+    color: var(--pe-text-dim);
+    font-size: 16px;
+    transition: color 0.2s;
+    position: relative;
+    width: 32px;
+    justify-content: center;
+  }
+  .pe .connector-line {
+    position: absolute;
+    height: 1.5px;
+    background: linear-gradient(90deg, var(--pe-border), var(--pe-text-dim));
+    width: calc(100% - 10px);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .pe .connector-arrow {
+    font-size: 12px;
+    position: relative;
+    z-index: 1;
+    background: var(--pe-surface);
+    padding: 0 2px;
+  }
+
+  /* ── Detail Panel ── */
+  .pe .detail-panel {
+    position: fixed;
+    right: 0; top: 0; bottom: 0;
+    width: 360px;
+    background: var(--pe-surface);
+    border-left: 1px solid var(--pe-border);
+    padding: 0;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: var(--pe-text);
+  }
+  .pe .detail-panel.open {
+    transform: translateX(0);
+    box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+  }
+  .pe .panel-header {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid var(--pe-border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+  }
+  .pe .panel-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--pe-border);
+    background: var(--pe-surface2);
+    color: var(--pe-text-muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+  .pe .panel-close:hover {
+    border-color: var(--pe-accent-blue);
+    color: var(--pe-text);
+  }
+  .pe .panel-phase-tag {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .pe .panel-step-num { font-size: 13px; color: var(--pe-text-muted); }
+  .pe .panel-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--pe-text);
+    line-height: 1.3;
+    padding-right: 36px;
+  }
+  .pe .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .pe .panel-body::-webkit-scrollbar { width: 4px; }
+  .pe .panel-body::-webkit-scrollbar-track { background: transparent; }
+  .pe .panel-body::-webkit-scrollbar-thumb { background: var(--pe-border); border-radius: 4px; }
+
+  .pe .info-block { display: flex; flex-direction: column; gap: 8px; }
+  .pe .info-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--pe-text-dim);
+    font-weight: 700;
+  }
+  .pe .info-value { font-size: 14px; color: var(--pe-text-muted); line-height: 1.6; }
+  .pe .info-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .pe .checklist { display: flex; flex-direction: column; gap: 8px; }
+  .pe .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--pe-surface2);
+    border-radius: 8px;
+    border: 1px solid var(--pe-border);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pe .check-item:hover { border-color: var(--step-color, var(--pe-accent-blue)); }
+  .pe .check-box {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    border: 1.5px solid var(--pe-border);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    font-size: 10px;
+  }
+  .pe .check-item.checked .check-box {
+    background: var(--pe-accent-green);
+    border-color: var(--pe-accent-green);
+  }
+  .pe .check-text {
+    font-size: 13px;
+    color: var(--pe-text-muted);
+    line-height: 1.5;
+    transition: color 0.2s;
+  }
+  .pe .check-item.checked .check-text {
+    text-decoration: line-through;
+    color: var(--pe-text-dim);
+  }
+
+  .pe .tip-box {
+    background: linear-gradient(135deg, rgba(79,156,249,0.08) 0%, rgba(167,139,250,0.08) 100%);
+    border: 1px solid rgba(79,156,249,0.2);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 13px;
+    color: var(--pe-text-muted);
+    line-height: 1.6;
+    display: flex;
+    gap: 10px;
+  }
+  .pe .tip-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+
+  .pe .panel-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--pe-border);
+    display: flex;
+    gap: 10px;
+  }
+  /* High-specificity .btn rules so host .btn styles don't bleed in */
+  .pe .panel-footer .btn,
+  .pe .btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--pe-border);
+    background: var(--pe-surface2);
+    color: var(--pe-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .pe .btn:hover { border-color: var(--pe-accent-blue); color: var(--pe-text); }
+  .pe .btn-primary {
+    background: linear-gradient(135deg, var(--pe-accent-blue), var(--pe-accent-purple));
+    border-color: transparent;
+    color: #fff;
+  }
+  .pe .btn-primary:hover { opacity: 0.9; border-color: transparent; color: #fff; }
+  .pe .btn-success {
+    background: linear-gradient(135deg, var(--pe-accent-green), #059669);
+    border-color: transparent;
+    color: #fff;
+  }
+  .pe .btn-success:hover { opacity: 0.9; border-color: transparent; color: #fff; }
+
+  /* ── Overlay ── */
+  .pe .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .pe .overlay.show { opacity: 1; pointer-events: all; }
+
+  /* ── Hint bar ── */
+  .pe .hint-bar {
+    padding: 10px 40px;
+    background: var(--pe-surface2);
+    border-top: 1px solid var(--pe-border);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 12px;
+    color: var(--pe-text-dim);
+    flex-wrap: wrap;
+    margin-top: auto;
+  }
+  .pe .hint-item { display: flex; align-items: center; gap: 6px; }
+  .pe .hint-key {
+    padding: 2px 6px;
+    background: var(--pe-surface);
+    border: 1px solid var(--pe-border);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--pe-text-muted);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .pe .main { padding: 12px 8px; }
+    .pe .header { padding: 20px 8px 14px; }
+    .pe .legend { padding: 10px 8px; }
+    .pe .progress-bar-wrap { padding: 10px 8px; }
+    .pe .phase-divider { padding: 0 8px 0 44px; }
+    .pe .lane-label { width: 36px; padding: 12px 4px; }
+    .pe .lane-label-inner { font-size: 9px; }
+    .pe .lane-icon { display: none; }
+    .pe .detail-panel { width: 100vw; }
+    .pe .hint-bar { padding: 10px 8px; }
+  }
+
+  /* ── Animations (prefixed to avoid keyframe-name collisions) ── */
+  @keyframes pe-fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .pe .swimlane { animation: pe-fadeUp 0.4s ease both; }
+  .pe .swimlane:nth-child(1) { animation-delay: 0.05s; }
+  .pe .swimlane:nth-child(2) { animation-delay: 0.1s; }
+  .pe .swimlane:nth-child(3) { animation-delay: 0.15s; }
+  .pe .phase-divider { animation: pe-fadeUp 0.4s ease both; }
+
+  @keyframes pe-pulseBorder {
+    0%, 100% { box-shadow: 0 0 16px var(--step-glow, var(--pe-glow-blue)); }
+    50% { box-shadow: 0 0 30px var(--step-glow, var(--pe-glow-blue)); }
+  }
+  .pe .step-card.active { animation: pe-pulseBorder 2.5s ease-in-out infinite; }
+</style>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-title">
+    <span class="header-tag">Game Development · Production Pipeline</span>
+    <h1>3D Model Lifecycle Pipeline</h1>
+    <span class="header-sub">Track each stage from concept to in-engine integration</span>
+  </div>
+</div>
+
+<!-- Progress Bar -->
+<div class="progress-bar-wrap">
+  <span class="progress-label">Pipeline Progress</span>
+  <div class="progress-track">
+    <div class="progress-fill" id="pe-progressFill"></div>
+  </div>
+  <span class="progress-count" id="pe-progressCount">0 / 9 steps</span>
+</div>
+
+<!-- Phase Legend -->
+<div class="legend">
+  <div class="legend-item active" data-phase="all" onclick="PE.filterPhase('all', this)">
+    <span class="legend-dot" style="background:#4f9cf9"></span> All Phases
+  </div>
+  <div class="legend-item" data-phase="creation" onclick="PE.filterPhase('creation', this)">
+    <span class="legend-dot" style="background:#a78bfa"></span> Creation
+  </div>
+  <div class="legend-item" data-phase="processing" onclick="PE.filterPhase('processing', this)">
+    <span class="legend-dot" style="background:#fb923c"></span> Processing
+  </div>
+  <div class="legend-item" data-phase="integration" onclick="PE.filterPhase('integration', this)">
+    <span class="legend-dot" style="background:#34d399"></span> Integration
+  </div>
+</div>
+
+<!-- Main Pipeline -->
+<div class="main" id="pe-mainPipeline">
+
+  <!-- Phase Headers -->
+  <div class="phase-divider" id="pe-ph-creation">
+    <div class="phase-block">
+      <div class="phase-pill" style="color:#a78bfa; border-color:#a78bfa; background:rgba(167,139,250,0.08)">① Creation of 3D Model</div>
+    </div>
+    <span class="phase-arrow">──────────────────────────────────────▶</span>
+    <div class="phase-block" style="margin-left:auto">
+      <div class="phase-pill" style="color:#fb923c; border-color:#fb923c; background:rgba(251,146,60,0.08)">② Python Processing</div>
+    </div>
+    <span class="phase-arrow">──────────────▶</span>
+    <div class="phase-block">
+      <div class="phase-pill" style="color:#34d399; border-color:#34d399; background:rgba(52,211,153,0.08)">③ Integration</div>
+    </div>
+  </div>
+
+  <!-- Swimlane: 3D Modeler -->
+  <div class="swimlane" data-lane="modeler">
+    <div class="lane-label" style="border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.05)">
+      <span class="lane-icon">🎨</span>
+      <span class="lane-label-inner" style="color:#a78bfa">3D Modeler</span>
+    </div>
+    <div class="lane-body">
+
+      <div class="step">
+        <div class="step-card" id="pe-step-1"
+          style="--step-color:#a78bfa; --step-glow:rgba(167,139,250,0.25)"
+          data-phase="creation" data-step="1"
+          onclick="PE.openPanel(1)">
+          <span class="step-num">STEP 01</span>
+          <span class="step-title">Idea is Known</span>
+          <div class="step-done-badge">✓</div>
+        </div>
+        <div class="connector"><div class="connector-line"></div><span class="connector-arrow">▶</span></div>
+      </div>
+
+      <div class="step">
+        <div class="step-card" id="pe-step-2"
+          style="--step-color:#a78bfa; --step-glow:rgba(167,139,250,0.25)"
+          data-phase="creation" data-step="2"
+          onclick="PE.openPanel(2)">
+          <span class="step-num">STEP 02</span>
+          <span class="step-title">3D Model Shaped &amp; Formed</span>
+          <div class="step-done-badge">✓</div>
+        </div>
+        <div class="connector"><div class="connector-line"></div><span class="connector-arrow">▶</span></div>
+      </div>
+
+      <div class="step">
+        <div class="step-card" id="pe-step-3"
+          style="--step-color:#a78bfa; --step-glow:rgba(167,139,250,0.25)"
+          data-phase="creation" data-step="3"
+          onclick="PE.openPanel(3)">
+          <span class="step-num">STEP 03</span>
+          <span class="step-title">Material Placed on Model</span>
+          <div class="step-done-badge">✓</div>
+        </div>
+        <div class="connector"><div class="connector-line"></div><span class="connector-arrow">▶</span></div>
+      </div>
+
+      <div class="step">
+        <div class="step-card" id="pe-step-4"
+          style="--step-color:#a78bfa; --step-glow:rgba(167,139,250,0.25)"
+          data-phase="creation" data-step="4"
+          onclick="PE.openPanel(4)">
+          <span class="step-num">STEP 04</span>
+          <span class="step-title">Model Exported</span>
+          <div class="step-done-badge">✓</div>
+        </div>
+        <div class="connector"><div class="connector-line"></div><span class="connector-arrow">▶</span></div>
+      </div>
+
+      <!-- Spacers to align columns across swimlanes -->
+      <div class="step" style="flex:2; visibility:hidden">
+        <div class="step-card"><span class="step-title">-</span></div>
+      </div>
+      <div class="connector" style="visibility:hidden"></div>
+      <div class="step" style="visibility:hidden">
+        <div class="step-card"><span class="step-title">-</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Swimlane: Python Program -->
+  <div class="swimlane" data-lane="python">
+    <div class="lane-label" style="border-color: rgba(251,146,60,0.3); background: rgba(251,146,60,0.05)">
+      <span class="lane-icon">🐍</span>
+      <span class="lane-label-inner" style="color:#fb923c">Python Program</span>
+    </div>
+    <div class="lane-body">
+
+      <div class="step" style="flex:4; visibility:hidden">
+        <div class="step-card"><span class="step-title">-</span></div>
+      </div>
+      <div class="connector" style="visibility:hidden"></div>
+
+      <div class="step">
+        <div class="step-card" id="pe-step-5"
+          style="--step-color:#fb923c; --step-glow:rgba(251,146,60,0.25)"
+          data-phase="processing" data-step="5"
+          onclick="PE.openPanel(5)">
+          <span class="step-num">STEP 05</span>
+          <span class="step-title">File Plugged into Program</span>
+          <div class="step-done-badge">✓</div>
+        </div>
+        <div class="connector"><div class="connector-line"></div><span class="connector-arrow">▶</span></div>
+      </div>
+
+      <div class="step">
+        <div class="step-card" id="pe-step-6"
+          style="--step-color:#fb923c; --step-glow:rgba(251,146,60,0.25)"
+          data-phase="processing" data-step="6"
+          onclick="PE.openPanel(6)">
+          <span class="step-num">STEP 06</span>
+          <span class="step-title">File Transferred to Correct Format</span>
+          <div class="step-done-badge">✓</div>
+        </div>
+        <div class="connector"><div class="connector-line"></div><span class="connector-arrow">▶</span></div>
+      </div>
+
+      <div class="step">
+        <div class="step-card" id="pe-step-7"
+          style="--step-color:#fb923c; --step-glow:rgba(251,146,60,0.25)"
+          data-phase="processing" data-step="7"
+          onclick="PE.openPanel(7)">
+          <span class="step-num">STEP 07</span>
+          <span class="step-title">Troubleshoot Transfer Errors</span>
+          <div class="step-done-badge">✓</div>
+        </div>
+        <div class="connector"><div class="connector-line"></div><span class="connector-arrow">▶</span></div>
+      </div>
+
+      <div class="step" style="flex:2; visibility:hidden">
+        <div class="step-card"><span class="step-title">-</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Swimlane: Gameplay Designer -->
+  <div class="swimlane" data-lane="gameplay">
+    <div class="lane-label" style="border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.05)">
+      <span class="lane-icon">🎮</span>
+      <span class="lane-label-inner" style="color:#34d399">Gameplay Designer</span>
+    </div>
+    <div class="lane-body">
+
+      <div class="step" style="flex:7; visibility:hidden">
+        <div class="step-card"><span class="step-title">-</span></div>
+      </div>
+      <div class="connector" style="visibility:hidden"></div>
+
+      <div class="step">
+        <div class="step-card" id="pe-step-8"
+          style="--step-color:#34d399; --step-glow:rgba(52,211,153,0.25)"
+          data-phase="integration" data-step="8"
+          onclick="PE.openPanel(8)">
+          <span class="step-num">STEP 08</span>
+          <span class="step-title">3D Model Imported</span>
+          <div class="step-done-badge">✓</div>
+        </div>
+        <div class="connector"><div class="connector-line"></div><span class="connector-arrow">▶</span></div>
+      </div>
+
+      <div class="step">
+        <div class="step-card" id="pe-step-9"
+          style="--step-color:#34d399; --step-glow:rgba(52,211,153,0.25)"
+          data-phase="integration" data-step="9"
+          onclick="PE.openPanel(9)">
+          <span class="step-num">STEP 09</span>
+          <span class="step-title">Model Programmed for Use</span>
+          <div class="step-done-badge">✓</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- end .main -->
+
+<!-- Hint Bar -->
+<div class="hint-bar">
+  <span class="hint-item"><span class="hint-key">Click</span> any step to see details</span>
+  <span class="hint-item"><span class="hint-key">✓</span> mark steps complete</span>
+  <span class="hint-item"><span class="hint-key">Filter</span> by phase above</span>
+</div>
+
+<!-- Detail Panel Overlay -->
+<div class="overlay" id="pe-overlay" onclick="PE.closePanel()"></div>
+
+<!-- Detail Panel -->
+<div class="detail-panel" id="pe-detailPanel">
+  <div class="panel-header" id="pe-panelHeader">
+    <div class="panel-phase-tag" id="pe-panelPhaseTag"></div>
+    <div class="panel-step-num" id="pe-panelStepNum"></div>
+    <div class="panel-title" id="pe-panelTitle"></div>
+    <button class="panel-close" onclick="PE.closePanel()">✕</button>
+  </div>
+  <div class="panel-body" id="pe-panelBody"></div>
+  <div class="panel-footer">
+    <button class="btn" id="pe-prevBtn" onclick="PE.navigatePanel(-1)">← Prev</button>
+    <button class="btn btn-primary" id="pe-doneBtn" onclick="PE.markDone()">Mark Complete ✓</button>
+    <button class="btn" id="pe-nextBtn" onclick="PE.navigatePanel(1)">Next →</button>
+  </div>
+</div>
+
+</div><!-- end .pe -->
+
+<script>
+(function() {
+  // ── Step Data ──
+  const steps = {
+    1: {
+      phase: 'Creation', phaseColor: '#a78bfa', role: '3D Modeler', roleIcon: '🎨',
+      title: 'Idea is Known',
+      description: 'The concept for the 3D model is defined. This is where artistic direction, gameplay requirements, and visual style are aligned before any modeling begins.',
+      details: [
+        'Review design brief and gameplay requirements',
+        'Gather reference images and concept art',
+        'Define polygon budget and technical constraints',
+        "Confirm art style fits the game's visual language",
+      ],
+      tip: 'Before touching any modeling software, ensure the concept is signed off by the art director. Changes made during modeling are far more costly.',
+      tools: 'Miro, Notion, PureRef',
+    },
+    2: {
+      phase: 'Creation', phaseColor: '#a78bfa', role: '3D Modeler', roleIcon: '🎨',
+      title: '3D Model Shaped & Formed',
+      description: 'The mesh is built in 3D modeling software. Geometry is created following the design spec, respecting the polygon budget and topology requirements.',
+      details: [
+        'Block out rough shape using primitives',
+        'Refine mesh with edge loops and subdivisions',
+        'Clean up topology for animation readiness',
+        'UV unwrap the model for texturing',
+      ],
+      tip: 'Good topology is key. Clean edge flow makes rigging, animation, and LOD generation dramatically easier downstream.',
+      tools: 'Blender, Maya, 3ds Max, ZBrush',
+    },
+    3: {
+      phase: 'Creation', phaseColor: '#a78bfa', role: '3D Modeler', roleIcon: '🎨',
+      title: 'Material Placed on Model',
+      description: 'Textures and materials are applied to the mesh. PBR (Physically Based Rendering) maps are created to give the model its final visual appearance.',
+      details: [
+        'Create or source textures (diffuse, normal, roughness, metallic)',
+        'Assign materials to UV-mapped mesh regions',
+        'Set up PBR material properties',
+        'Verify material looks correct under target lighting',
+      ],
+      tip: 'Texture resolution should be chosen early. Over-resolution textures balloon memory usage in-engine.',
+      tools: 'Substance Painter, Photoshop, Blender',
+    },
+    4: {
+      phase: 'Creation', phaseColor: '#a78bfa', role: '3D Modeler', roleIcon: '🎨',
+      title: 'Model Exported',
+      description: 'The finished model is exported from the DCC tool into an interchange format ready for the Python processing pipeline.',
+      details: [
+        'Select appropriate export format (FBX, OBJ, GLTF)',
+        'Confirm scale and axis orientation match engine conventions',
+        'Include or bake all required texture maps',
+        'Double-check export settings (smoothing groups, normals)',
+      ],
+      tip: 'FBX is the most common interchange format for game engines, but GLTF 2.0 is becoming the modern standard. Confirm which your engine prefers.',
+      tools: 'Blender Exporter, Maya FBX Plugin',
+    },
+    5: {
+      phase: 'Processing', phaseColor: '#fb923c', role: 'Python Program', roleIcon: '🐍',
+      title: 'File Plugged into Program',
+      description: 'The exported model file is loaded into the Python pipeline for automated processing, validation, and format conversion.',
+      details: [
+        'Load file using appropriate Python 3D library',
+        'Validate mesh integrity (no missing faces, degenerate triangles)',
+        'Check file conforms to naming conventions',
+        'Log file metadata (vertex count, mesh count, file size)',
+      ],
+      tip: 'Use libraries like trimesh, pywavefront, or assimp bindings. Always validate the mesh is manifold before proceeding.',
+      tools: 'Python 3, trimesh, assimp, pygltflib',
+    },
+    6: {
+      phase: 'Processing', phaseColor: '#fb923c', role: 'Python Program', roleIcon: '🐍',
+      title: 'File Transferred to Correct Format',
+      description: 'The Python program converts the model to the exact format and specification required by the game engine.',
+      details: [
+        'Convert geometry to engine-required format',
+        'Apply coordinate system transforms if needed',
+        'Optimize mesh (merge vertices, remove duplicates)',
+        'Pack and compress textures per engine spec',
+      ],
+      tip: 'Automate this step as a CI/CD pipeline step so format mismatches are caught before they reach the integration phase.',
+      tools: 'Python, trimesh, Pillow, numpy',
+    },
+    7: {
+      phase: 'Processing', phaseColor: '#fb923c', role: 'Python Program', roleIcon: '🐍',
+      title: 'Troubleshoot Transfer Errors',
+      description: 'The program detects and logs any errors or anomalies that occurred during the format conversion, and either auto-fixes or flags them for the modeler.',
+      details: [
+        'Run integrity checks on converted file',
+        'Detect inverted normals, missing UVs, or broken materials',
+        'Auto-correct minor issues (flipping normals, re-welding verts)',
+        'Flag critical issues back to the 3D Modeler for manual fix',
+      ],
+      tip: 'Build a comprehensive error log that maps error codes back to specific model elements. This saves enormous time when a modeler needs to re-open the file to fix an issue.',
+      tools: 'Python logging, trimesh, custom validators',
+    },
+    8: {
+      phase: 'Integration', phaseColor: '#34d399', role: 'Gameplay Designer', roleIcon: '🎮',
+      title: '3D Model Imported',
+      description: 'The processed and validated model is imported into the game engine by the Gameplay Designer, ready for scene placement and game logic.',
+      details: [
+        'Import model asset into engine project',
+        'Verify materials render correctly in engine',
+        'Set up LOD (Level of Detail) distances',
+        'Configure collision meshes if needed',
+      ],
+      tip: 'Always import into a staging scene first. Never directly into a live scene. This lets you validate without risking the main project.',
+      tools: 'Unity, Unreal Engine, Godot',
+    },
+    9: {
+      phase: 'Integration', phaseColor: '#34d399', role: 'Gameplay Designer', roleIcon: '🎮',
+      title: 'Model Programmed for Use',
+      description: 'The model is wired into game logic. Animations, interactions, physics, and scripting are connected to make it a functional in-game object.',
+      details: [
+        'Attach animation controller or state machine',
+        'Hook up gameplay events (interact, damage, destroy)',
+        'Configure physics properties (mass, friction, collision)',
+        'Write or connect gameplay scripts to the model',
+      ],
+      tip: "Document the interface contract between the model and game scripts. Which bones are addressable, what events it emits, so future updates to the model don't silently break game logic.",
+      tools: 'C# / GDScript / Blueprint, engine animation tools',
+    },
+  };
+
+  // ── State ──
+  let activeStep = null;
+  const doneSteps = new Set();
+  const checkStates = {};
+
+  const $ = (id) => document.getElementById(id);
+
+  function openPanel(stepId) {
+    const data = steps[stepId];
+    if (!data) return;
+    activeStep = stepId;
+
+    document.querySelectorAll('.pe .step-card').forEach(c => c.classList.remove('active'));
+    $('pe-step-' + stepId).classList.add('active');
+
+    $('pe-panelPhaseTag').textContent = data.phase + ' Phase';
+    $('pe-panelPhaseTag').style.color = data.phaseColor;
+    $('pe-panelStepNum').textContent = 'Step ' + String(stepId).padStart(2, '0') + ' · ' + data.roleIcon + ' ' + data.role;
+    $('pe-panelTitle').textContent = data.title;
+
+    if (!checkStates[stepId]) checkStates[stepId] = new Array(data.details.length).fill(false);
+    const saved = checkStates[stepId];
+
+    const isDone = doneSteps.has(stepId);
+    const btnLabel = isDone ? '✓ Completed' : 'Mark Complete ✓';
+    const btnClass = isDone ? 'btn btn-success' : 'btn btn-primary';
+
+    $('pe-panelBody').innerHTML = `
+      <div class="info-block">
+        <div class="info-label">Overview</div>
+        <div class="info-value">${data.description}</div>
+      </div>
+      <div class="info-block">
+        <div class="info-label">Checklist</div>
+        <div class="checklist" id="pe-checklist-${stepId}">
+          ${data.details.map((d, i) => `
+            <div class="check-item ${saved[i] ? 'checked' : ''}" onclick="PE.toggleCheck(${stepId}, ${i})" style="--step-color:${data.phaseColor}">
+              <div class="check-box">${saved[i] ? '✓' : ''}</div>
+              <div class="check-text">${d}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="info-block">
+        <div class="info-label">Tools</div>
+        <div>
+          ${data.tools.split(', ').map(t => `<span class="info-badge" style="color:${data.phaseColor}; border-color:${data.phaseColor}; background:${data.phaseColor}18; margin:3px 3px 3px 0; display:inline-flex">${t}</span>`).join('')}
+        </div>
+      </div>
+      <div class="tip-box">
+        <span class="tip-icon">💡</span>
+        <span>${data.tip}</span>
+      </div>
+    `;
+
+    $('pe-doneBtn').textContent = btnLabel;
+    $('pe-doneBtn').className = btnClass;
+
+    $('pe-prevBtn').disabled = stepId <= 1;
+    $('pe-nextBtn').disabled = stepId >= 9;
+    $('pe-prevBtn').style.opacity = stepId <= 1 ? '0.3' : '1';
+    $('pe-nextBtn').style.opacity = stepId >= 9 ? '0.3' : '1';
+
+    $('pe-detailPanel').classList.add('open');
+    $('pe-overlay').classList.add('show');
+  }
+
+  function closePanel() {
+    $('pe-detailPanel').classList.remove('open');
+    $('pe-overlay').classList.remove('show');
+    document.querySelectorAll('.pe .step-card').forEach(c => c.classList.remove('active'));
+    activeStep = null;
+  }
+
+  function navigatePanel(dir) {
+    if (!activeStep) return;
+    const next = activeStep + dir;
+    if (next >= 1 && next <= 9) openPanel(next);
+  }
+
+  function markDone() {
+    if (!activeStep) return;
+    if (doneSteps.has(activeStep)) {
+      doneSteps.delete(activeStep);
+      $('pe-step-' + activeStep).classList.remove('done');
+    } else {
+      doneSteps.add(activeStep);
+      $('pe-step-' + activeStep).classList.add('done');
+    }
+    updateProgress();
+    openPanel(activeStep);
+  }
+
+  function toggleCheck(stepId, index) {
+    if (!checkStates[stepId]) checkStates[stepId] = [];
+    checkStates[stepId][index] = !checkStates[stepId][index];
+    const items = document.querySelectorAll(`#pe-checklist-${stepId} .check-item`);
+    const item = items[index];
+    item.classList.toggle('checked', checkStates[stepId][index]);
+    item.querySelector('.check-box').textContent = checkStates[stepId][index] ? '✓' : '';
+  }
+
+  function updateProgress() {
+    const total = 9;
+    const done = doneSteps.size;
+    $('pe-progressFill').style.width = (done / total * 100) + '%';
+    $('pe-progressCount').textContent = done + ' / ' + total + ' steps';
+  }
+
+  function filterPhase(phase, el) {
+    document.querySelectorAll('.pe .legend-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+
+    document.querySelectorAll('.pe .step-card[data-phase]').forEach(card => {
+      const cardPhase = card.getAttribute('data-phase');
+      const match = phase === 'all' || cardPhase === phase;
+      card.closest('.step').style.opacity = match ? '1' : '0.2';
+      card.closest('.step').style.pointerEvents = match ? 'auto' : 'none';
+    });
+  }
+
+  // Keyboard nav only fires when the panel is open, so it won't interfere
+  // with the host page's keyboard interactions otherwise.
+  document.addEventListener('keydown', e => {
+    if (!activeStep) return;
+    if (e.key === 'Escape') closePanel();
+    if (e.key === 'ArrowRight') navigatePanel(1);
+    if (e.key === 'ArrowLeft') navigatePanel(-1);
+  });
+
+  // Expose to global so onclick handlers can reach the functions
+  window.PE = { openPanel, closePanel, navigatePanel, markDone, toggleCheck, filterPhase };
+
+  // Init
+  updateProgress();
+})();
+</script>
