@@ -111,7 +111,7 @@
     .tt{display:flex;gap:4px;margin-bottom:28px;background:var(--t-sur);border-radius:var(--r);padding:4px;border:1px solid var(--t-bdr);}
     .ttb{flex:1;padding:11px 14px;text-align:center;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;color:var(--t-dim);transition:all .2s;}
     .ttb:hover{color:var(--t-txt);background:var(--t-sur2);}
-    .ttb.active{color:var(--t-txt);background:var(--t-acc);}
+    .ttb.active{color:#fff;background:var(--t-acc);}
     .tcon{display:none;}.tcon.active{display:block;}
 
     /* tool card */
@@ -130,15 +130,15 @@
     /* selects */
     .sr{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:end;margin-bottom:18px;}
     .sg label{display:block;font-size:12px;color:var(--t-dim);margin-bottom:5px;font-weight:500;}
-    .sg select{width:100%;padding:9px 12px;background:var(--t-sur2);border:1px solid var(--t-bdr);border-radius:8px;color:var(--t-txt);font-size:13px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a86a8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+    .sg select{width:100%;padding:9px 12px;background:var(--t-sur2);border:1px solid var(--t-bdr);border-radius:8px;color:var(--t-txt);font-size:13px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a6e60' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
     .sg select:focus{outline:none;border-color:var(--t-acc);}
     .ai2{color:var(--t-dim);text-align:center;font-size:22px;padding-bottom:7px;}
     @media(max-width:600px){.sr{grid-template-columns:1fr;}.ai2{transform:rotate(90deg);}}
 
     /* buttons */
     .btn{padding:9px 22px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
-    .bp{background:var(--t-acc);color:#fff;}.bp:hover{background:#5a7aee;}
-    .bg2{background:var(--t-grn);color:#fff;}.bg2:hover{background:#3d9e74;}
+    .bp{background:var(--t-acc);color:#fff;}.bp:hover{background:#1f5e3a;}
+    .bg2{background:var(--t-grn);color:#fff;}.bg2:hover{background:#1f5e3a;}
     .btn:disabled{opacity:.4;cursor:not-allowed;}
     .br{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
 
@@ -157,17 +157,17 @@
     /* issues */
     .ii{display:flex;gap:10px;padding:12px 14px;background:var(--t-sur2);border-radius:8px;margin-bottom:7px;align-items:flex-start;}
     .ib{flex-shrink:0;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
-    .bc{background:rgba(224,85,85,.15);color:var(--t-red);}
-    .be{background:rgba(232,148,74,.15);color:var(--t-org);}
-    .bw{background:rgba(240,192,64,.15);color:var(--t-yel);}
-    .bi{background:rgba(108,138,255,.15);color:var(--t-acc);}
+    .bc{background:rgba(192,57,43,.12);color:var(--t-red);}
+    .be{background:rgba(176,88,32,.12);color:var(--t-org);}
+    .bw{background:rgba(154,106,0,.12);color:var(--t-yel);}
+    .bi{background:rgba(42,122,78,.12);color:var(--t-acc);}
     .it{font-weight:600;font-size:13px;margin-bottom:3px;}
     .id2{font-size:12px;color:var(--t-dim);line-height:1.5;}
     .ifix{display:flex;align-items:center;gap:5px;margin-top:5px;font-size:11px;color:var(--t-grn);}
 
     /* recs */
     .rc{display:flex;gap:14px;padding:14px;background:var(--t-sur2);border-radius:8px;margin-bottom:9px;border-left:3px solid var(--t-acc);}
-    .rr{flex-shrink:0;width:30px;height:30px;background:var(--t-acc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;}
+    .rr{flex-shrink:0;width:30px;height:30px;background:var(--t-acc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;}
     .rf{font-weight:700;font-size:15px;color:var(--t-acc2);}
     .rrs{font-size:12px;color:var(--t-dim);margin-top:3px;}
     .trc{background:var(--t-sur2);border-radius:8px;padding:14px;margin-bottom:9px;}
@@ -195,9 +195,9 @@
     .frm:hover{color:var(--t-red);}
 
     /* ai card */
-    .ac{background:linear-gradient(135deg,rgba(108,138,255,.08),rgba(79,195,247,.06));border:1px solid rgba(108,138,255,.3);border-radius:var(--r);padding:18px 22px;margin-bottom:18px;}
+    .ac{background:linear-gradient(135deg,rgba(42,122,78,.07),rgba(30,102,64,.04));border:1px solid rgba(42,122,78,.25);border-radius:var(--r);padding:18px 22px;margin-bottom:18px;}
     .ah{display:flex;align-items:center;gap:9px;margin-bottom:10px;}
-    .ab{display:inline-flex;align-items:center;gap:5px;background:rgba(108,138,255,.15);color:var(--t-acc);border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;letter-spacing:.05em;}
+    .ab{display:inline-flex;align-items:center;gap:5px;background:rgba(42,122,78,.15);color:var(--t-acc);border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;letter-spacing:.05em;}
     .at{font-size:13px;line-height:1.75;color:var(--t-txt);white-space:pre-wrap;}
     .ae{color:var(--t-red);font-size:12px;}
 
@@ -206,7 +206,7 @@
     .kbc{background:var(--t-sur2);border-radius:8px;padding:14px;}
     .kbc h4{color:var(--t-acc2);margin-bottom:7px;font-size:13px;}
     .kbc p{font-size:12px;color:var(--t-dim);line-height:1.5;}
-    .kt{display:inline-block;padding:2px 7px;background:rgba(108,138,255,.1);color:var(--t-acc);border-radius:4px;font-size:10px;margin-top:7px;}
+    .kt{display:inline-block;padding:2px 7px;background:rgba(42,122,78,.12);color:var(--t-acc);border-radius:4px;font-size:10px;margin-top:7px;}
 
     /* chat */
     .cw{display:flex;flex-direction:column;height:520px;background:var(--t-sur);border:1px solid var(--t-bdr);border-radius:var(--r);overflow:hidden;}
@@ -663,4 +663,4 @@ document.querySelectorAll('.fi').forEach(el=>obs.observe(el));
 window.addEventListener('scroll',()=>{
   let cur='';
   document.querySelectorAll('section[id]').forEach(s=>{if(window.scrollY>=s.offsetTop-130)cur=s.id||'';});
-  document.querySelectorAll('.nav-links a').forEach(a=>{a.classList.toggle('active',a.g
+  document.querySelectorAll('.nav-links a').forEach(a=>{a.classList.toggle('active',a.getAttrib
