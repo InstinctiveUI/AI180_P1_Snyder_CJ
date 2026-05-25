@@ -77,16 +77,18 @@
     .pq{border-left:2px solid var(--b-hi);padding:18px 30px;margin:44px 0;font-family:var(--serif);font-size:21px;font-style:italic;color:var(--b-hi);line-height:1.5;max-width:620px;}
 
     /* PIPELINE */
-    .pipeline{margin-top:44px;display:grid;grid-template-columns:1fr 56px 1fr 56px 1fr;align-items:stretch;gap:0;}
-    .pr{display:flex;flex-direction:column;justify-content:space-between;padding:36px 32px;background:#07101e;border:1px solid #0e1f34;border-radius:8px;transition:background .2s;min-height:180px;}
+    .pipeline-outer{margin-top:44px;width:100%;box-sizing:border-box;padding:0 32px;}
+    .pipeline{display:grid;grid-template-columns:1fr 64px 1fr 64px 1fr;align-items:stretch;gap:0;width:100%;}
+    .pr{display:flex;flex-direction:column;justify-content:space-between;padding:40px 36px;background:#07101e;border:1px solid #0e1f34;border-radius:8px;transition:background .2s;min-height:200px;}
     .pr:hover{background:#0c1a30;}
-    .pr-app{font-family:var(--serif);font-size:clamp(15px,1.4vw,20px);color:var(--b-accent);margin-bottom:14px;line-height:1.3;}
+    .pr-app{font-family:var(--serif);font-size:clamp(16px,1.5vw,22px);color:var(--b-accent);margin-bottom:16px;line-height:1.3;}
     .pr-desc{font-family:var(--sans);font-size:14px;color:#5a7898;line-height:1.65;flex:1;}
-    .pr-tag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:#3a5878;text-transform:uppercase;margin-top:20px;}
+    .pr-tag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:#3a5878;text-transform:uppercase;margin-top:22px;}
     .pa{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#1e3a5c;font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-align:center;padding:8px 4px;line-height:1.4;}
-    .pa-arr{font-size:22px;color:#1a3a5a;line-height:1;}
+    .pa-arr{font-size:24px;color:#1a3a5a;line-height:1;}
     @media(max-width:760px){
-      .pipeline{grid-template-columns:1fr;grid-template-rows:auto;}
+      .pipeline-outer{padding:0 16px;}
+      .pipeline{grid-template-columns:1fr;}
       .pa{flex-direction:row;padding:10px 20px;background:#050d1a;border:1px solid #0e1f34;border-radius:6px;font-size:9px;gap:10px;}
       .pa-arr{font-size:16px;}
     }
@@ -310,10 +312,12 @@
 </section>
 
 <!-- §02 PIPELINE -->
-<section id="pipeline" class="bs bg-b fi">
-  <div class="si">
+<section id="pipeline" class="bg-b fi" style="padding:96px 0;border-bottom:1px solid #0a1828;">
+  <div class="si" style="padding:0 56px;">
     <div class="sec-hd"><span class="sec-num">02</span><h2 class="sec-title">The Pipeline</h2></div>
     <div class="prose"><p>The 3D model lifecycle runs through at least four distinct environments before an asset reaches a shipped game. Each handoff is a potential failure point.</p></div>
+  </div>
+  <div class="pipeline-outer">
     <div class="pipeline">
       <div class="pr">
         <div class="pr-app">3ds Max / ZBrush</div>
@@ -333,6 +337,8 @@
         <div class="pr-tag">Target</div>
       </div>
     </div>
+  </div>
+  <div class="si" style="padding:0 56px;">
     <div class="prose" style="margin-top:40px;"><p>The transfer tool is not one factor among several — it is <strong>the hinge</strong>. Everything on the source side collapses to a single moment when the file crosses into the destination environment. That moment is where the tool operates.</p></div>
     <div style="margin-top:44px;">
       <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#2e5070;margin-bottom:14px;">Interactive Lifecycle Map</div>
