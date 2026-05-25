@@ -96,8 +96,9 @@
     .disc strong{color:#5a80a8;font-weight:normal;}
 
     /* FADE */
-    .fi{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease;}
-    .fi.vis{opacity:1;transform:translateY(0);}
+    .fi{opacity:1;transform:translateY(0);transition:opacity .65s ease,transform .65s ease;}
+    .fi.hidden{opacity:0;transform:translateY(18px);}
+    .fi.hidden.vis{opacity:1;transform:translateY(0);}
 
     /* ══ TOOL SECTION ══ */
     #tool{background:var(--t-bg);padding:96px 0 0;border-bottom:1px solid #c4b8a8;}
@@ -656,11 +657,11 @@ document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='
 document.getElementById('chatInput').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px';});
 
 // fade-in
-const obs=new IntersectionObserver(entries=>{entries.forEach(el=>{if(el.isIntersecting)el.target.classList.add('vis');});},{threshold:.07});
-document.querySelectorAll('.fi').forEach(el=>obs.observe(el));
+const obs=new IntersectionObserver(entries=>{entries.forEach(el=>{if(el.isIntersecting){el.target.classList.add('vis');}});},{threshold:.07});
+document.querySelectorAll('.fi').forEach(el=>{el.classList.add('hidden');obs.observe(el);});
 
 // active nav
 window.addEventListener('scroll',()=>{
   let cur='';
   document.querySelectorAll('section[id]').forEach(s=>{if(window.scrollY>=s.offsetTop-130)cur=s.id||'';});
-  document.querySelectorAll('.nav-links a').forEach(a=>{a.classList.toggle('active',a.getAttrib
+  doc
