@@ -2,12 +2,11 @@
 3D Model Transfer Assistant - Flask Web App
 """
 import os
-import json
+import sys
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 
-# app must be defined before local imports so Vercel builder can always find it
 app = Flask(__name__)
 
 _IS_VERCEL = os.environ.get('VERCEL') == '1'
@@ -40,27 +39,14 @@ except Exception as _ie:
 ALLOWED_EXTENSIONS = {'stl', 'obj', 'fbx', 'glb', 'gltf', 'ply', 'dae', '3ds'}
 LOG_FILE = '/tmp/activity_log.md' if _IS_VERCEL else os.path.join(os.path.dirname(__file__), 'activity_log.md')
 
-EXPLANATIONS = {
-    'Analyze': 'The program loaded the model and inspected its geometry for issues.',
-    'Auto-Fix': 'The program applied targeted repairs and exported the cleaned model.',
-    'Auto-Fix FAILED': 'The program attempted repair but encountered an error.',
-    'Format Recommendation': 'The program matched source/target apps against known transfer issues.',
-    'Download': 'The user downloaded the repaired model file.',
-}
-
 
 def write_log(action, filename=None, details=None):
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     if not os.path.exists(LOG_FILE):
-        with open(LOG_FILE, 'w', encoding='utf-8') as f:
-            f.write('# 3D Model Transfer Assistant - Activity Log\n\n')
-            f.write('| Timestamp | Action | File | Details | What the Program Did |\n')
-            f.write('|-----------|--------|------|---------|----------------------|\n')
-    file_col = filename or '-'
-    detail_col = details or '-'
-    explanation = EXPLANATIONS.get(action, 'Operation completed.')
-    with open(LOG_FILE, 'a', encoding='utf-8') as f:
-        f.write(f'| {timestamp} | {action} | {file_col} | {detail_col} | {explanation} |\n')
+        with open(LOG_FILE, 'w') as f:
+            f.write('# Activity Log\n\n| Timestamp | Action | File | Details |\n|---|---|---|---|\n')
+    with open(LOG_FILE, 'a') as f:
+        f.write('| ' + timestamp + ' | ' + action + ' | ' + (filename or '-') + ' | ' + (details or '-') + ' |\n')
 
 
 def allowed_file(filename):
@@ -79,46 +65,39 @@ def pipeline():
 
 @app.route('/api/health')
 def health():
-    import sys
     return jsonify({
         "status": "ok",
         "vercel": _IS_VERCEL,
         "import_error": _import_error,
         "api_key_set": bool(os.environ.get("ANTHROPIC_API_KEY")),
-        "upload_dir": UPLOAD_DIR,
-        "fixed_dir": FIXED_DIR,
         "python": sys.version,
     })
 
 
-@app.route('/api/apps', methods=['GET'])
+@app.route('/api/apps')
 def get_apps():
     return jsonify(APP_CATEGORIES)
 
 
-@app.route('/api/formats', methods=['GET'])
+@app.route('/api/formats')
 def get_formats():
     return jsonify(FORMAT_INFO)
 
 
-@app.route('/api/knowledge', methods=['GET'])
+@app.route('/api/knowledge')
 def get_knowledge():
-    return jsonify({
-        "transfer_issues": TRANSFER_ISSUES,
-        "print_issues": PRINT_ISSUES,
-        "key_causes": KEY_CAUSES,
-        "recommended_tools": RECOMMENDED_TOOLS,
-    })
+    return jsonify({"transfer_issues": TRANSFER_ISSUES, "print_issues": PRINT_ISSUES,
+                    "key_causes": KEY_CAUSES, "recommended_tools": RECOMMENDED_TOOLS})
 
 
 @app.route('/api/recommend', methods=['POST'])
 def recommend():
-    data = request.json
+    data = request.json or {}
     source = data.get('source', '')
     target = data.get('target', '')
     formats = get_recommended_format(source, target)
     issues = get_relevant_issues(source, target)
-    write_log('Format Recommendation', details=source + ' to ' + target)
+    write_log('Recommend', details=source + ' to ' + target)
     return jsonify({"formats": formats, "issues": issues})
 
 
@@ -126,58 +105,46 @@ def recommend():
 def analyze():
     if 'model' not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
-    file = request.files['model']
-    if file.filename == '' or not allowed_file(file.filename):
-        return jsonify({"error": "Invalid file. Supported: " + ', '.join(ALLOWED_EXTENSIONS)}), 400
-    safe_name = secure_filename(file.filename)
-    if not safe_name:
-        return jsonify({"error": "Invalid filename."}), 400
-    filepath = os.path.join(UPLOAD_DIR, safe_name)
-    file.save(filepath)
-    report = analyze_model(filepath)
-    issue_count = len(report.get('issues', []))
-    fix_count = len(report.get('fixable', []))
-    stats = report.get('stats', {})
-    write_log('Analyze', filename=file.filename,
-              details=str(stats.get('vertices', 0)) + ' verts, ' + str(issue_count) + ' issues')
+    f = request.files['model']
+    if not f.filename or not allowed_file(f.filename):
+        return jsonify({"error": "Invalid file type"}), 400
+    safe = secure_filename(f.filename)
+    if not safe:
+        return jsonify({"error": "Invalid filename"}), 400
+    path = os.path.join(UPLOAD_DIR, safe)
+    f.save(path)
+    report = analyze_model(path)
+    write_log('Analyze', filename=safe, details=str(len(report.get('issues', []))) + ' issues')
     return jsonify(report)
 
 
 @app.route('/api/fix', methods=['POST'])
 def fix():
-    data = request.json
+    data = request.json or {}
     filename = secure_filename(data.get('filename', ''))
     if not filename:
-        return jsonify({"error": "Invalid filename."}), 400
-    fixes = data.get('fixes', [])
-    output_format = data.get('output_format', 'stl')
-    filepath = os.path.join(UPLOAD_DIR, filename)
-    if not os.path.exists(filepath):
+        return jsonify({"error": "Invalid filename"}), 400
+    path = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.exists(path):
         return jsonify({"error": "File not found. Please upload again."}), 404
-    result = fix_model(filepath, fixes, output_format)
-    if result.get('success'):
-        write_log('Auto-Fix', filename=filename, details='Output: ' + str(result.get('output_file')))
-    else:
-        write_log('Auto-Fix FAILED', filename=filename, details=result.get('error', 'Unknown error'))
+    result = fix_model(path, data.get('fixes', []), data.get('output_format', 'stl'))
+    write_log('Fix', filename=filename, details='success' if result.get('success') else result.get('error', ''))
     return jsonify(result)
 
 
 @app.route('/api/download/<filename>')
 def download_fixed(filename):
-    safe_name = secure_filename(filename)
-    if not safe_name:
-        return jsonify({"error": "Invalid filename."}), 400
-    write_log('Download', filename=safe_name, details='User downloaded fixed model')
-    return send_from_directory(FIXED_DIR, safe_name, as_attachment=True)
+    safe = secure_filename(filename)
+    if not safe:
+        return jsonify({"error": "Invalid filename"}), 400
+    write_log('Download', filename=safe)
+    return send_from_directory(FIXED_DIR, safe, as_attachment=True)
 
 
 @app.route('/api/ai/summary', methods=['POST'])
 def ai_summary():
     data = request.json or {}
-    report = data.get('report', {})
-    source = data.get('source_app', '')
-    target = data.get('target_app', '')
-    result = get_analysis_summary(report, source, target)
+    result = get_analysis_summary(data.get('report', {}), data.get('source_app', ''), data.get('target_app', ''))
     return jsonify(result)
 
 
@@ -186,13 +153,16 @@ def ai_format():
     data = request.json or {}
     source = data.get('source_app', '')
     target = data.get('target_app', '')
-    stats = data.get('model_stats')
     if not source or not target:
-        return jsonify({'error': 'source_app and target_app are required'}), 400
-    result = get_ai_format_advice(source, target, stats)
-    return jsonify(result)
+        return jsonify({'error': 'source_app and target_app required'}), 400
+    return jsonify(get_ai_format_advice(source, target, data.get('model_stats')))
 
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    data = request.
+    data = request.json or {}
+    return jsonify(claude_chat(data.get('messages', []), data.get('context')))
+
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
