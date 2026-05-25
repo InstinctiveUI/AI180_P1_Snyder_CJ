@@ -321,6 +321,10 @@
       <div class="pr"><div class="pr-app">Unity / Unreal Engine</div><div class="pr-desc">Destination environment. The model is rigged, lit, and integrated into the game world. Errors here are expensive to trace back.</div><div class="pr-tag">Target</div></div>
     </div>
     <div class="prose" style="margin-top:40px;"><p>The transfer tool is not one factor among several — it is <strong>the hinge</strong>. Everything on the source side collapses to a single moment when the file crosses into the destination environment. That moment is where the tool operates.</p></div>
+    <div style="margin-top:44px;">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#2e5070;margin-bottom:14px;">Interactive Lifecycle Map</div>
+      <iframe src="/pipeline" style="width:100%;height:780px;border:1px solid #0e1f34;border-radius:8px;display:block;" loading="lazy" title="3D Model Lifecycle Pipeline"></iframe>
+    </div>
   </div>
 </section>
 
@@ -661,10 +665,4 @@ function buildCtx(){if(!analysisReport)return null;return{filename:analysisRepor
 function addMsg(role,text){const m=document.getElementById('chatMessages'),d=document.createElement('div');d.className='msg '+role;d.textContent=text;m.appendChild(d);m.scrollTop=m.scrollHeight;}
 
 async function sendChat(){
-  const inp=document.getElementById('chatInput'),text=inp.value.trim();if(!text)return;
-  inp.value='';inp.style.height='';
-  chatHistory.push({role:'user',content:text});addMsg('user',text);
-  document.getElementById('chatTyping').classList.add('show');
-  document.getElementById('chatSendBtn').disabled=true;
-  try{
-    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatH
+  const inp=document.getElementById('chatInput'),tex

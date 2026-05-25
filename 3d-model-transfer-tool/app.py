@@ -3,41 +3,16 @@
 Upload a 3D model, select source/target applications, get analysis + auto-fix.
 """
 import os
-import sys
 import json
-import traceback
 from datetime import datetime
-
-# Ensure co-located modules (analyzer, knowledge_base, claude_ai) are importable
-# regardless of how Vercel configures sys.path in its serverless runtime.
-_HERE = os.path.dirname(os.path.abspath(__file__))
-if _HERE not in sys.path:
-    sys.path.insert(0, _HERE)
-
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
-
-# Capture import errors so the health endpoint can surface them (None = no error)
-_import_error = None
-try:
-    from analyzer import analyze_model, fix_model
-    from knowledge_base import (
-        get_recommended_format, get_relevant_issues, APP_CATEGORIES,
-        FORMAT_INFO, KEY_CAUSES, RECOMMENDED_TOOLS, TRANSFER_ISSUES, PRINT_ISSUES
-    )
-    from claude_ai import get_analysis_summary, get_ai_format_advice, chat as claude_chat
-except Exception:
-    _import_error = traceback.format_exc()
-    # Provide stubs so routes that use these names don't raise NameError
-    def analyze_model(fp): return {"error": "modules not loaded", "detail": _import_error}   # noqa
-    def fix_model(fp, fixes, fmt="stl"): return {"success": False, "error": _import_error}   # noqa
-    def get_recommended_format(s, t): return []                                               # noqa
-    def get_relevant_issues(s, t): return []                                                  # noqa
-    def get_analysis_summary(r, s="", t=""): return {"error": _import_error}                 # noqa
-    def get_ai_format_advice(s, t, stats=None): return {"error": _import_error}              # noqa
-    def claude_chat(msgs, ctx=None): return {"error": _import_error}                         # noqa
-    APP_CATEGORIES = {}; FORMAT_INFO = {}; KEY_CAUSES = []; RECOMMENDED_TOOLS = []           # noqa
-    TRANSFER_ISSUES = []; PRINT_ISSUES = []                                                   # noqa
+from analyzer import analyze_model, fix_model
+from knowledge_base import (
+    get_recommended_format, get_relevant_issues, APP_CATEGORIES,
+    FORMAT_INFO, KEY_CAUSES, RECOMMENDED_TOOLS, TRANSFER_ISSUES, PRINT_ISSUES
+)
+from claude_ai import get_analysis_summary, get_ai_format_advice, chat as claude_chat
 
 app = Flask(__name__)
 
@@ -113,6 +88,11 @@ def allowed_file(filename):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/pipeline')
+def pipeline():
+    return render_template('pipeline.html')
 
 
 @app.route('/api/apps', methods=['GET'])
@@ -206,30 +186,6 @@ def download_fixed(filename):
 
 
 # ---------------------------------------------------------------------------
-# Health / debug endpoint (safe to call publicly — no secrets exposed)
-# ---------------------------------------------------------------------------
-
-@app.route('/api/health')
-def health():
-    """Lightweight liveness check that surfaces sys.path, template, and import info."""
-    tmpl_path = os.path.join(_HERE, 'templates', 'index.html')
-    return jsonify({
-        "status": "ok" if _import_error is None else "degraded",
-        "import_error": _import_error,
-        "python": sys.version,
-        "is_vercel": _IS_VERCEL,
-        "cwd": os.getcwd(),
-        "file": __file__,
-        "here": _HERE,
-        "sys_path": sys.path[:6],
-        "template_path": tmpl_path,
-        "template_exists": os.path.exists(tmpl_path),
-        "upload_dir_exists": os.path.exists(UPLOAD_DIR),
-        "fixed_dir_exists": os.path.exists(FIXED_DIR),
-    })
-
-
-# ---------------------------------------------------------------------------
 # AI endpoints (Anthropic Claude)
 # ---------------------------------------------------------------------------
 
@@ -269,5 +225,4 @@ def chat():
 
 if __name__ == '__main__':
     print("\n  3D Model Transfer Assistant")
-    print("  Open http://localhost:5000 in your browser\n")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print("  Open http://
