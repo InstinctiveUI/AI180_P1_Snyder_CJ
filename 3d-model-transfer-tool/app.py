@@ -7,14 +7,29 @@ import json
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
-from analyzer import analyze_model, fix_model
-from knowledge_base import (
-    get_recommended_format, get_relevant_issues, APP_CATEGORIES,
-    FORMAT_INFO, KEY_CAUSES, RECOMMENDED_TOOLS, TRANSFER_ISSUES, PRINT_ISSUES
-)
-from claude_ai import get_analysis_summary, get_ai_format_advice, chat as claude_chat
 
+# app must be defined before any local imports so Vercel's builder can always find it
 app = Flask(__name__)
+
+try:
+    from analyzer import analyze_model, fix_model
+    from knowledge_base import (
+        get_recommended_format, get_relevant_issues, APP_CATEGORIES,
+        FORMAT_INFO, KEY_CAUSES, RECOMMENDED_TOOLS, TRANSFER_ISSUES, PRINT_ISSUES
+    )
+    from claude_ai import get_analysis_summary, get_ai_format_advice, chat as claude_chat
+    _import_error = None
+except Exception as _ie:
+    _import_error = str(_ie)
+    def analyze_model(*a, **k): return {"error": f"Import failed: {_import_error}"}
+    def fix_model(*a, **k): return {"error": f"Import failed: {_import_error}"}
+    def get_recommended_format(*a, **k): return {}
+    def get_relevant_issues(*a, **k): return []
+    def get_analysis_summary(*a, **k): return f"Import error: {_import_error}"
+    def get_ai_format_advice(*a, **k): return f"Import error: {_import_error}"
+    def claude_chat(*a, **k): return f"Import error: {_import_error}"
+    APP_CATEGORIES = {}; FORMAT_INFO = {}; KEY_CAUSES = {}
+    RECOMMENDED_TOOLS = {}; TRANSFER_ISSUES = []; PRINT_ISSUES = []
 
 # Use /tmp on Vercel (serverless read-only filesystem), local dirs otherwise
 _IS_VERCEL = os.environ.get('VERCEL') == '1'
@@ -201,28 +216,4 @@ def ai_summary():
 
 
 @app.route('/api/ai/format', methods=['POST'])
-def ai_format():
-    """Return AI-powered format advice for a source->target workflow."""
-    data = request.json or {}
-    source = data.get('source_app', '')
-    target = data.get('target_app', '')
-    stats = data.get('model_stats')
-    if not source or not target:
-        return jsonify({'error': 'source_app and target_app are required'}), 400
-    result = get_ai_format_advice(source, target, stats)
-    return jsonify(result)
-
-
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    """Multi-turn chat endpoint powered by Claude."""
-    data = request.json or {}
-    messages = data.get('messages', [])
-    context = data.get('context')
-    result = claude_chat(messages, context)
-    return jsonify(result)
-
-
-if __name__ == '__main__':
-    print("\n  3D Model Transfer Assistant")
-    print("  Open http://
+def a
