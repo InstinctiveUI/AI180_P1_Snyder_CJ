@@ -195,4 +195,12 @@ def ai_format():
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    data = request.
+    data = request.json or {}
+    messages = data.get('messages', [])
+    context = data.get('context', {})
+    result = claude_ai.chat(messages, context)
+    return jsonify(result)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

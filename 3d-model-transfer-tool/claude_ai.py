@@ -206,4 +206,8 @@ def chat(messages: list, context: dict = None) -> dict:
             model="claude-haiku-4-5-20251001",
             max_tokens=600,
             system=system,
-            messag
+            messages=anthropic_messages,
+        )
+        return {"reply": response.content[0].text}
+    except Exception as exc:
+        return {"error": str(exc)}
