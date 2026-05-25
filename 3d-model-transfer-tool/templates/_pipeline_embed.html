@@ -34,15 +34,23 @@
   .pe h1, .pe h2, .pe h3 { margin: 0; line-height: 1.2; }
 
   /* ── Visual embed container (only the main wrapper, NOT the panel host) ── */
+  /* Full-bleed: break out of the host content column (which has padding) so
+     the swimlanes get the full viewport width. Step cards have room to
+     breathe instead of wrapping their titles into 3-4 lines. */
   .pe.pe-embed {
     background: var(--pe-bg);
-    border-radius: 12px;
-    border: 1px solid #0e1f34;
+    border-top: 1px solid #0e1f34;
+    border-bottom: 1px solid #0e1f34;
     overflow: hidden;
     position: relative;
     display: block;
-    width: 100%;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
   }
+  /* 100vw includes scrollbar width on most browsers; prevent horizontal scroll
+     that would otherwise appear when a vertical scrollbar is present. */
+  html:has(.pe.pe-embed), body:has(.pe.pe-embed) { overflow-x: clip; }
 
   /* ── Header ── */
   .pe .header {
@@ -233,7 +241,7 @@
     background: var(--pe-surface2);
     border: 1.5px solid var(--pe-border);
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 12px 12px;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(.4,0,.2,1);
     position: relative;
@@ -302,13 +310,13 @@
   .pe .connector {
     display: flex;
     align-items: center;
-    padding: 0 6px;
+    padding: 0 4px;
     flex-shrink: 0;
     color: var(--pe-text-dim);
     font-size: 16px;
     transition: color 0.2s;
     position: relative;
-    width: 32px;
+    width: 20px;
     justify-content: center;
   }
   .pe .connector-line {
