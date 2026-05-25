@@ -3,8 +3,6 @@
 
 | Question | Response |
 |----------|----------|
-| Can I defend this? | Yes. The tool was built to solve a real problem I have and will continue to have — transferring 3D models between software without breaking them. Every decision in the pipeline traces back to that use case. |
-| Is this mine? | Yes. The idea for the tool was mine. I identified the problem, defined the pipeline, and directed AI to build it according to my specifications. |
-| Did I verify? | Yes. I ran actual 3D model files through the tool to test that the analysis, auto-fix, and export functions work as intended. |
-| Would I teach this? | Yes. I can walk someone through the full pipeline and use the tool itself to demonstrate the transfer problems it solves. |
-| Is my disclosure honest? | Yes. The AI use log accurately reflects how Claude was used throughout P3. |
+| Can I defend this? | Yes. Someone could argue that directing AI to build something isn't really your work — but that framing is wrong. I changed and updated code myself; AI helped with coding but did not build the tool independently. Every consequential decision was mine. |
+| Is this mine? | Yes, with honesty about where Claude contributed. The problem came entirely from my own experience as a game developer — Claude had no part in identifying it. The idea was mine before any AI was involved. Where Claude did heavy lifting was the Vercel deployment; that work would have taken days instead of hours without it. |
+| Did I verify? | Yes, partially. I ran real 3D models I made through the tool — files from my actual pipeline, with no prior knowledge of whether they were clean or broken
