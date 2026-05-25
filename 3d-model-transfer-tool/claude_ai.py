@@ -5,7 +5,8 @@ Requires the ANTHROPIC_API_KEY environment variable to be set.
 Get a key at: https://console.anthropic.com/
 """
 import os
-import anthropic
+
+# anthropic imported lazily inside _get_client() to avoid Vercel cold-start timeout
 
 SYSTEM_PROMPT = """You are an expert 3D modeling and file-transfer assistant embedded in the \
 3D Model Transfer Assistant tool. You help users understand mesh issues, choose the right export \
@@ -22,7 +23,11 @@ def _get_client():
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         return None
-    return anthropic.Anthropic(api_key=api_key)
+    try:
+        import anthropic
+        return anthropic.Anthropic(api_key=api_key)
+    except Exception:
+        return None
 
 
 def _api_key_error():
@@ -201,8 +206,4 @@ def chat(messages: list, context: dict = None) -> dict:
             model="claude-haiku-4-5-20251001",
             max_tokens=600,
             system=system,
-            messages=anthropic_messages,
-        )
-        return {"reply": response.content[0].text}
-    except Exception as exc:
-        return {"error": str(exc)}
+            messag

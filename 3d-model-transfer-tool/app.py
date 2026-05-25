@@ -77,6 +77,20 @@ def pipeline():
     return render_template('pipeline.html')
 
 
+@app.route('/api/health')
+def health():
+    import sys
+    return jsonify({
+        "status": "ok",
+        "vercel": _IS_VERCEL,
+        "import_error": _import_error,
+        "api_key_set": bool(os.environ.get("ANTHROPIC_API_KEY")),
+        "upload_dir": UPLOAD_DIR,
+        "fixed_dir": FIXED_DIR,
+        "python": sys.version,
+    })
+
+
 @app.route('/api/apps', methods=['GET'])
 def get_apps():
     return jsonify(APP_CATEGORIES)
@@ -181,14 +195,4 @@ def ai_format():
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    data = request.json or {}
-    messages = data.get('messages', [])
-    context = data.get('context')
-    result = claude_chat(messages, context)
-    return jsonify(result)
-
-
-if __name__ == '__main__':
-    print('\n  3D Model Transfer Assistant')
-    print('  Open http://localhost:5000 in your browser\n')
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    data = request.
