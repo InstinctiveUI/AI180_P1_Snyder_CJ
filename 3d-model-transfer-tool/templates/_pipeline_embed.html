@@ -328,12 +328,15 @@
   }
 
   /* ── Detail Panel ── */
+  /* Top offset clears the host page's fixed nav (z-index: 200) so the panel
+     header, phase tag, and close button aren't cropped behind it. */
   .pe .detail-panel {
     position: fixed;
-    right: 0; top: 0; bottom: 0;
+    right: 0; top: 64px; bottom: 0;
     width: 360px;
     background: var(--pe-surface);
     border-left: 1px solid var(--pe-border);
+    border-top: 1px solid var(--pe-border);
     padding: 0;
     transform: translateX(100%);
     transition: transform 0.35s cubic-bezier(.4,0,.2,1);
