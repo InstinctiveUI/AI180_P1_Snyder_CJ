@@ -24,3 +24,4 @@ An exercise in self-observation across two phases:
 
 ## Course
 AI 180 — Week 2 Submission
+https://ai-180-p1-snyder-hhcp5u9uh-instinctiveuis-projects.vercel.app/
