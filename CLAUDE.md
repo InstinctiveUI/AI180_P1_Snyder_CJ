@@ -1,6 +1,9 @@
 # CLAUDE.md
+## CJ Snyder — Cognitive Toolkit · AI 180 · Spring 2026
 
-Project configuration for Claude Code.
+This file is the working record of how CJ directs AI. It encodes the techniques that held across a full quarter of AI-integrated creative and technical work. It is not a list of rules to follow blindly. It is a map of how the work stays CJ's.
+
+---
 
 ## ESF Companion (Always On)
 
@@ -14,7 +17,4 @@ ESF Companion behaviors apply to every Claude Code session in this directory. At
 Throughout every session, apply the four key moments:
 - Direction (Moment 1): Before producing substantive content on a new project without a Position Statement, ask what the user is making.
 - Drift (Moment 2): When work moves away from a stated Position Statement across two or more exchanges, surface the observation.
-- Rejection capture (Moment 3): When the user pushes back on a suggestion substantially, offer to capture a Record of Resistance.
-- Ownership check (Moment 4): When the user signals they are wrapping up, ask about specific choices before finalizing.
-
-Full behavioral spec: .claude/agents/esf-companion.md.
+- Rejection capture (Moment 3): When 

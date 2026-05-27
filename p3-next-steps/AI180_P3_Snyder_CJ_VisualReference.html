@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cognitive Toolkit — Visual Reference · CJ Snyder</title>
+<style>
+  :root {
+    --bg: #07101e;
+    --bg2: #080f1f;
+    --surface: #0c1830;
+    --surface2: #0f1f3a;
+    --border: #1a3358;
+    --border2: #0e1f34;
+    --accent:  #4f9cf9;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text: #e2e8f0;
+    --muted: #5a7898;
+    --dim: #253a55;
+    --serif: Georgia, 'Times New Roman', serif;
+    --mono: 'Courier New', monospace;
+    --sans: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+
+  /* ── Page wrapper ── */
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 64px 48px 96px;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+    margin-bottom: 56px;
+    gap: 24px;
+  }
+
+  .header-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .header-title {
+    font-family: var(--serif);
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -.01em;
+  }
+
+  .header-title span { color: var(--accent); }
+
+  .header-meta {
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 2;
+    letter-spacing: .05em;
+  }
+
+  /* ── Section label ── */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border2);
+  }
+
+  /* ── Toolkit grid ── */
+  .toolkit-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .toolkit-grid-bottom {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+
+  /* ── Tool card ── */
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 28px 26px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--c, var(--accent));
+  }
+
+  .tool-card::after {
+    content: attr(data-num);
+    position: absolute;
+    top: 20px; right: 22px;
+    font-family: var(--mono);
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--c, var(--accent));
+    opacity: .07;
+    line-height: 1;
+  }
+
+  .tool-number {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: var(--c, var(--accent));
+    opacity: .7;
+    margin-bottom: 10px;
+  }
+
+  .tool-name {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .tool-what {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .directive-block {
+    background: rgba(255,255,255,.02);
+    border-left: 2px solid var(--c, var(--accent));
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .directive-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .directive-text {
+    font-size: 12.5px;
+    color: #a0bcd8;
+    line-height: 1.6;
+  }
+
+  .origin-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .origin-tag::before { content: '↗'; color: var(--c, var(--accent)); }
+
+  /* ── Quarter section ── */
+  .quarter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-bottom: 56px;
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .quarter-item {
+    padding: 28px 26px;
+    border-right: 1px solid var(--border2);
+    position: relative;
+  }
+  .quarter-item:last-child { border-right: none; }
+
+  .quarter-phase {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .quarter-title {
+    font-family: var(--serif);
+    font-size: 18px;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .quarter-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .quarter-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tool-pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: .05em;
+  }
+
+  /* ── Forward section ── */
+  .forward-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+
+  .fwd-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+  }
+
+  .fwd-lp {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .18em;
+    color: var(--accent3);
+    margin-bottom: 10px;
+  }
+
+  .fwd-name {
+    font-family: var(--serif);
+    font-size: 17px;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.25;
+  }
+
+  .fwd-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .fwd-ref {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    line-height: 1.7;
+  }
+
+  .fwd-ref span { color: var(--accent3); opacity: .6; }
+
+  /* ── Footer ── */
+  .footer {
+    border-top: 1px solid var(--border2);
+    padding-top: 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .footer-left {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    line-height: 1.8;
+    letter-spacing: .05em;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 16px;
+  }
+
+  .footer-link {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    text-decoration: none;
+    padding: 6px 12px;
+    border: 1px solid rgba(79,156,249,.2);
+    border-radius: 6px;
+    letter-spacing: .05em;
+  }
+
+  @media (max-width: 800px) {
+    .page { padding: 32px 20px 64px; }
+    .toolkit-grid, .toolkit-grid-bottom, .quarter-grid, .forward-grid {
+      grid-template-columns: 1fr;
+    }
+    .quarter-item { border-right: none; border-bottom: 1px solid var(--border2); }
+    .quarter-item:last-child { border-bottom: none; }
+    .header { grid-template-columns: 1fr; }
+    .header-meta { text-align: left; }
+    .footer { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="header-eyebrow">Cognitive Toolkit · Visual Reference</div>
+      <div class="header-title">How the Work<br>Stays <span>Mine</span></div>
+    </div>
+    <div class="header-meta">
+      CJ Snyder<br>
+      AI 180 · Spring 2026<br>
+      Session 20<br>
+      CLAUDE.md companion
+    </div>
+  </div>
+
+  <!-- Five Tools -->
+  <div class="section-label">The Five Tools</div>
+
+  <div class="toolkit-grid">
+
+    <div class="tool-card" style="--c:#4f9cf9" data-num="1">
+      <div class="tool-number">Tool 01</div>
+      <div class="tool-name">Position Before<br>Engagement</div>
+      <div class="tool-what">Before AI touches any substantive work, a Position Statement exists — naming what is being made, what cannot be compromised, and what the use case is.</div>
+      <div class="directive-block">
+        <div class="directive-label">Directive</div>
+        <div class="directive-text">If no Position Statement exists, ask for one before proceeding. Do not produce drafts or framings before this exists.</div>
+      </div>
+      <div class="origin-tag">P3 · Enabled rejection of RoR #03 and #04</div>
+    </div>
+
+    <div class="tool-card" style="--c:#a78bfa" data-num="2">
+      <div class="tool-number">Tool 02</div>
+      <div class="tool-name">Record of<br>Resistance</div>
+      <div class="tool-what">When AI output is rejected directionally, the moment is captured: what was suggested, why it was rejected, what happened instead.</div>
+      <div class="directive-block" style="border-left-color:#a78bfa">
+        <div class="directive-label">Directive</div>
+        <div class="directive-text">When a suggestion is pushed back on substantially, offer to capture a Record of Resistance. Treat rejection as the most important signal.</div>
+      </div>
+      <div class="origin-tag" style="--c:#a78bfa">P2 + P3 · 4 records total; evidence of independent judgment</div>
+    </div>
+
+    <div class="tool-card" style="--c:#34d399" data-num="3">
+      <div class="tool-number">Tool 03</div>
+      <div class="tool-name">Directive<br>Scoping</div>
+      <div class="tool-what">Before a session, define what AI is doing and what it is not doing. Not just "help me with X" — "you are doing X, you are not deciding Y."</div>
+      <div class="directive-block" style="border-left-color:#34d399">
+        <div class="directive-label">Directive</div>
+        <div class="directive-text">If a recommendation would change scope, surface it as a choice. Do not expand scope beyond what was stated.</div>
+      </div>
+      <div class="origin-tag" style="--c:#34d399">P3 · Use case non-negotiable; AI role was implementation only</div>
+    </div>
+
+  </div>
+
+  <div class="toolkit-grid-bottom">
+
+    <div class="tool-card" style="--c:#fb923c" data-num="4">
+      <div class="tool-number">Tool 04</div>
+      <div class="tool-name">Behavior Verification, Not Error Counting</div>
+      <div class="tool-what">"Done" means the right behavior happens at the output — not that the current error is different from the last one. Working is the goal.</div>
+      <div class="directive-block" style="border-left-color:#fb923c">
+        <div class="directive-label">Directive</div>
+        <div class="directive-text">Keep focus on: does the right thing happen at the URL / in the output / with the real file? Do not frame a new error as progress.</div>
+      </div>
+      <div class="origin-tag" style="--c:#fb923c">P3 Vercel deployment · "Does it work at the URL" got it deployed</div>
+    </div>
+
+    <div class="tool-card" style="--c:#f472b6" data-num="5">
+      <div class="tool-number">Tool 05</div>
+      <div class="tool-name">Role Assignment</div>
+      <div class="tool-what">Before a work cycle, name the role: Provocateur (challenge the position), Thinking Partner (develop ideas already held), or Builder (implement to spec).</div>
+      <div class="directive-block" style="border-left-color:#f472b6">
+        <div class="directive-label">Directive</div>
+        <div class="directive-text">If the role hasn't been named, ask. A Provocateur that only agrees is failing. A Builder that freelances on design is overstepping.</div>
+      </div>
+      <div class="origin-tag" style="--c:#f472b6">P2 cycles · Role defined what counted as good output each cycle</div>
+    </div>
+
+  </div>
+
+  <!-- Quarter -->
+  <div class="section-label">The Quarter These Tools Came From</div>
+
+  <div class="quarter-grid">
+    <div class="quarter-item">
+      <div class="quarter-phase">P1 — Inquiry & Bias</div>
+      <div class="quarter-title">Foundation</div>
+      <div class="quarter-desc">Identified the tendency to treat AI fluency as accuracy. Named the biases that make AI output feel right when it might not be.</div>
+      <div class="quarter-tools">
+        <span class="tool-pill">Fluency ≠ accuracy</span>
+        <span class="tool-pill">Anchoring</span>
+        <span class="tool-pill">Einstellung</span>
+      </div>
+    </div>
+    <div class="quarter-item">
+      <div class="quarter-phase">P2 — Breaking Through</div>
+      <div class="quarter-title">Three Cycles</div>
+      <div class="quarter-desc">Built the 3D Model Transfer Assistant using AI as Provocateur then Thinking Partner. First Record of Resistance.</div>
+      <div class="quarter-tools">
+        <span class="tool-pill">Role Assignment</span>
+        <span class="tool-pill">RoR #01</span>
+        <span class="tool-pill">Directive Scoping</span>
+      </div>
+    </div>
+    <div class="quarter-item">
+      <div class="quarter-phase">P3 — Systems & Deployment</div>
+      <div class="quarter-title">Full Operation</div>
+      <div class="quarter-desc">Systems map, AI integration, Vercel deployment. Toolkit in full use — position, scoping, verification, resistance all in one project.</div>
+      <div class="quarter-tools">
+        <span class="tool-pill">All 5 tools</span>
+        <span class="tool-pill">RoR #02 #03 #04</span>
+        <span class="tool-pill">Live deployment</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forward -->
+  <div class="section-label">What's Next · Grounded in P3 Systems Analysis</div>
+
+  <div class="forward-grid">
+    <div class="fwd-card">
+      <div class="fwd-lp">⚡ LP1 · Upstream Intervention</div>
+      <div class="fwd-name">Pre-Export Validation Tool</div>
+      <div class="fwd-desc">Validate export settings in 3ds Max/ZBrush before the file reaches the transfer tool. Catch wrong scale, normals, and format at the source.</div>
+      <div class="fwd-ref">
+        <span>↗</span> AI180_P3_Snyder_CJ_SystemsMap.mmd<br>
+        <span>↗</span> 3d-model-transfer-tool/knowledge_base.py
+      </div>
+    </div>
+    <div class="fwd-card">
+      <div class="fwd-lp">⚡ LP3 · Downstream Standardization</div>
+      <div class="fwd-name">Engine Import Preset System</div>
+      <div class="fwd-desc">Standardize scale and material paths at the Unity/Unreal boundary. Close the loop the transfer tool opened at LP2.</div>
+      <div class="fwd-ref">
+        <span>↗</span> AI180_P3_Snyder_CJ_SystemsMap.mmd<br>
+        <span>↗</span> AI180_P3_Snyder_CJ_CaseStudy.md
+      </div>
+    </div>
+    <div class="fwd-card">
+      <div class="fwd-lp">Scale · Production Pipeline</div>
+      <div class="fwd-name">Batch Asset Pipeline Manager</div>
+      <div class="fwd-desc">Extend the current tool from one file to an entire asset library. Apply consistent settings across hundreds of models with a summary report.</div>
+      <div class="fwd-ref">
+        <span>↗</span> 3d-model-transfer-tool/app.py<br>
+        <span>↗</span> AI180_P3_Snyder_CJ_CycleAtoB.md
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-left">
+      CJ Snyder · AI 180 · Spring 2026<br>
+      Companion to CLAUDE.md · Full directives encoded in repo root<br>
+      Live tool: ai-180-p1-snyder-cj.vercel.app
+    </div>
+    <div class="footer-links">
+      <a class="footer-link" href="https://ai-180-p1-snyder-cj.vercel.app" target="_blank">Live Tool</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

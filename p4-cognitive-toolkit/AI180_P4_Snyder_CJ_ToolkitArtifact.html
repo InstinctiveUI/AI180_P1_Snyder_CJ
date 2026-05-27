@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cognitive Toolkit — CJ Snyder · AI 180</title>
+<style>
+  :root {
+    --bg: #07101e;
+    --surface: #0c1830;
+    --border: #1a3a60;
+    --accent: #4f9cf9;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text: #e2e8f0;
+    --muted: #5a7898;
+    --dim: #2a4a6a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Slide container ── */
+  .deck {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 100px;
+    opacity: 0;
+    transform: translateY(24px);
+    pointer-events: none;
+    transition: opacity .45s ease, transform .45s ease;
+  }
+
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  /* ── Nav ── */
+  .nav {
+    position: fixed;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    z-index: 100;
+    background: rgba(7,16,30,0.85);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 10px 24px;
+    backdrop-filter: blur(8px);
+  }
+
+  .nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color .2s;
+  }
+  .nav button:hover { color: var(--text); }
+  .nav button:disabled { color: var(--dim); cursor: default; }
+
+  .nav-count {
+    font-family: monospace;
+    font-size: 12px;
+    letter-spacing: .1em;
+    color: var(--muted);
+    min-width: 52px;
+    text-align: center;
+  }
+
+  /* ── Dots ── */
+  .dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--dim);
+    transition: background .3s, transform .3s;
+    cursor: pointer;
+  }
+  .dot.active {
+    background: var(--accent);
+    transform: scale(1.4);
+  }
+
+  /* ── Typography ── */
+  .slide-tag {
+    font-family: monospace;
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .slide-title {
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    letter-spacing: -.02em;
+  }
+
+  .slide-sub {
+    font-size: clamp(15px, 1.4vw, 20px);
+    color: var(--muted);
+    line-height: 1.65;
+    max-width: 680px;
+    margin-bottom: 40px;
+  }
+
+  .highlight { color: var(--accent); }
+  .highlight2 { color: var(--accent2); }
+  .highlight3 { color: var(--accent3); }
+  .highlight4 { color: var(--accent4); }
+  .highlight5 { color: var(--accent5); }
+
+  /* ── Directive block ── */
+  .directive {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 20px 24px;
+    max-width: 760px;
+    margin-bottom: 24px;
+  }
+  .directive-label {
+    font-family: monospace;
+    font-size: 10px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .directive-text {
+    font-size: 15px;
+    line-height: 1.65;
+    color: #b0c8e0;
+  }
+
+  /* ── Origin badge ── */
+  .origin {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(79,156,249,0.08);
+    border: 1px solid rgba(79,156,249,0.2);
+    border-radius: 99px;
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: .05em;
+    margin-top: 4px;
+  }
+
+  /* ── Tool grid ── */
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    max-width: 900px;
+    margin-top: 8px;
+  }
+
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .tool-card:hover {
+    background: #111f3a;
+    border-color: var(--accent);
+  }
+  .tool-num {
+    font-family: monospace;
+    font-size: 10px;
+    letter-spacing: .15em;
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+  .tool-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
+  }
+  .tool-card .tool-accent {
+    display: block;
+    width: 24px;
+    height: 2px;
+    border-radius: 2px;
+    margin-top: 10px;
+  }
+
+  /* ── Quarter timeline ── */
+  .timeline {
+    display: flex;
+    gap: 0;
+    max-width: 800px;
+    margin-top: 8px;
+  }
+  .tl-item {
+    flex: 1;
+    padding: 20px 20px 20px 0;
+    border-left: 2px solid var(--border);
+    padding-left: 20px;
+    position: relative;
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 22px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .tl-phase {
+    font-family: monospace;
+    font-size: 10px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .tl-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .tl-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  /* ── Forward cards ── */
+  .fwd-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 900px;
+    margin-top: 8px;
+  }
+  .fwd-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .fwd-lp {
+    font-family: monospace;
+    font-size: 10px;
+    letter-spacing: .15em;
+    color: var(--accent3);
+    margin-bottom: 10px;
+  }
+  .fwd-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .fwd-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  /* ── Title slide specific ── */
+  #slide-0 { background: radial-gradient(ellipse at 30% 40%, rgba(79,156,249,0.06) 0%, transparent 60%); }
+  .title-name { font-size: clamp(14px, 1.4vw, 18px); color: var(--muted); margin-top: 20px; }
+
+  /* ── Keyboard hint ── */
+  .key-hint {
+    position: fixed;
+    top: 28px;
+    right: 40px;
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: .1em;
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- Slide 0: Title -->
+  <div class="slide active" id="slide-0">
+    <div class="slide-tag">AI 180 · Spring 2026 · Session 20</div>
+    <div class="slide-title">Cognitive<br><span class="highlight">Toolkit</span></div>
+    <div class="slide-sub">Five techniques for keeping AI work yours.<br>Encoded from a quarter of practice.</div>
+    <div class="title-name">CJ Snyder &nbsp;·&nbsp; Game Development &nbsp;·&nbsp; AI 180</div>
+  </div>
+
+  <!-- Slide 1: Overview -->
+  <div class="slide" id="slide-1">
+    <div class="slide-tag">Overview</div>
+    <div class="slide-title">Five <span class="highlight2">Tools</span></div>
+    <div class="slide-sub">Each one emerged from practice — P1, P2, and P3. Each is encoded as a directive in CLAUDE.md.</div>
+    <div class="tool-grid">
+      <div class="tool-card">
+        <div class="tool-num">01</div>
+        <div class="tool-name">Position Before Engagement</div>
+        <span class="tool-accent" style="background:var(--accent)"></span>
+      </div>
+      <div class="tool-card">
+        <div class="tool-num">02</div>
+        <div class="tool-name">Record of Resistance</div>
+        <span class="tool-accent" style="background:var(--accent2)"></span>
+      </div>
+      <div class="tool-card">
+        <div class="tool-num">03</div>
+        <div class="tool-name">Directive Scoping</div>
+        <span class="tool-accent" style="background:var(--accent3)"></span>
+      </div>
+      <div class="tool-card">
+        <div class="tool-num">04</div>
+        <div class="tool-name">Behavior Verification</div>
+        <span class="tool-accent" style="background:var(--accent4)"></span>
+      </div>
+      <div class="tool-card">
+        <div class="tool-num">05</div>
+        <div class="tool-name">Role Assignment</div>
+        <span class="tool-accent" style="background:var(--accent5)"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2: Tool 1 -->
+  <div class="slide" id="slide-2">
+    <div class="slide-tag">Tool 01</div>
+    <div class="slide-title"><span class="highlight">Position</span><br>Before Engagement</div>
+    <div class="slide-sub">Before AI touches any substantive work, a Position Statement exists — naming what is being made, what cannot be compromised, and what the use case is.</div>
+    <div class="directive">
+      <div class="directive-label">Directive</div>
+      <div class="directive-text">If no Position Statement exists, ask for one before proceeding. Do not produce first drafts, suggestions, or framings before this exists.</div>
+    </div>
+    <div class="origin">↗ From P3 — enabled rejection of platform switch (RoR #03) and leverage point flattening (RoR #04)</div>
+  </div>
+
+  <!-- Slide 3: Tool 2 -->
+  <div class="slide" id="slide-3">
+    <div class="slide-tag">Tool 02</div>
+    <div class="slide-title"><span class="highlight2">Record</span><br>of Resistance</div>
+    <div class="slide-sub">When AI output is rejected directionally — not a small edit, but a call that something is wrong — that moment is captured. What AI suggested, why it was rejected, what happened instead.</div>
+    <div class="directive" style="border-left-color:var(--accent2)">
+      <div class="directive-label">Directive</div>
+      <div class="directive-text">When a suggestion is pushed back on substantially, offer to capture a Record of Resistance. Treat rejection as the most important signal in the session.</div>
+    </div>
+    <div class="origin" style="background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.2);color:var(--accent2)">↗ From P2 and P3 — 4 records total; 3 from P3 are the evidence of independent judgment</div>
+  </div>
+
+  <!-- Slide 4: Tool 3 -->
+  <div class="slide" id="slide-4">
+    <div class="slide-tag">Tool 03</div>
+    <div class="slide-title"><span class="highlight3">Directive</span><br>Scoping</div>
+    <div class="slide-sub">Before a work session, define what AI is doing and what it is not doing. Not just "help me with X" — "you are doing X, you are not deciding Y, you are not touching Z."</div>
+    <div class="directive" style="border-left-color:var(--accent3)">
+      <div class="directive-label">Directive</div>
+      <div class="directive-text">Check whether a scope boundary has been stated. If a recommendation would change scope, surface it as a choice — do not act on it.</div>
+    </div>
+    <div class="origin" style="background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.2);color:var(--accent3)">↗ From P3 deployment — use case was non-negotiable; AI's role was implementation, not definition</div>
+  </div>
+
+  <!-- Slide 5: Tool 4 -->
+  <div class="slide" id="slide-5">
+    <div class="slide-tag">Tool 04</div>
+    <div class="slide-title"><span class="highlight4">Behavior</span><br>Verification</div>
+    <div class="slide-sub">"Done" means the right behavior happens at the output. Not that the current error is different from the last one. A new error message is not progress. Working is the goal.</div>
+    <div class="directive" style="border-left-color:var(--accent4)">
+      <div class="directive-label">Directive</div>
+      <div class="directive-text">Keep focus on the actual behavior question: does the right thing happen at the URL / in the output / with the real file? Do not frame a new error as progress.</div>
+    </div>
+    <div class="origin" style="background:rgba(251,146,60,0.08);border-color:rgba(251,146,60,0.2);color:var(--accent4)">↗ From Vercel deployment — multiple error iterations; holding to "does it work at the URL" got it deployed</div>
+  </div>
+
+  <!-- Slide 6: Tool 5 -->
+  <div class="slide" id="slide-6">
+    <div class="slide-tag">Tool 05</div>
+    <div class="slide-title"><span class="highlight5">Role</span><br>Assignment</div>
+    <div class="slide-sub">Before a work cycle, name the role AI is playing: Provocateur (challenge the position), Thinking Partner (develop ideas already held), or Builder (implement to spec).</div>
+    <div class="directive" style="border-left-color:var(--accent5)">
+      <div class="directive-label">Directive</div>
+      <div class="directive-text">If the role hasn't been named, ask: is AI here to challenge, develop, or build? A Provocateur that only agrees is failing. A Builder that freelances on design is overstepping.</div>
+    </div>
+    <div class="origin" style="background:rgba(244,114,182,0.08);border-color:rgba(244,114,182,0.2);color:var(--accent5)">↗ From P2 cycles — Provocateur in Cycle 2, Thinking Partner in Cycle 3; role defined what counted as good output</div>
+  </div>
+
+  <!-- Slide 7: Quarter -->
+  <div class="slide" id="slide-7">
+    <div class="slide-tag">The Quarter</div>
+    <div class="slide-title">Where the Tools<br><span class="highlight">Came From</span></div>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-phase">P1</div>
+        <div class="tl-title">Inquiry & Bias</div>
+        <div class="tl-desc">Identified the tendency to treat AI fluency as accuracy. Foundation for every tool that followed.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-phase">P2</div>
+        <div class="tl-title">Breaking Through</div>
+        <div class="tl-desc">Three cycles. Provocateur → Thinking Partner. First Record of Resistance. First tool built by directing AI rather than prompting it.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-phase">P3</div>
+        <div class="tl-title">Systems & Deployment</div>
+        <div class="tl-desc">Systems map. Live deployment. Three Records of Resistance. The toolkit in full operation — position, scoping, verification, resistance, all in one project.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8: Forward -->
+  <div class="slide" id="slide-8">
+    <div class="slide-tag">What's Next</div>
+    <div class="slide-title">Unfinished<br><span class="highlight3">Business</span></div>
+    <div class="slide-sub">The P3 systems map identified three leverage points. LP2 was built. LP1 and LP3 are next.</div>
+    <div class="fwd-grid">
+      <div class="fwd-card">
+        <div class="fwd-lp">LP1 · Upstream</div>
+        <div class="fwd-title">Pre-Export Validation Tool</div>
+        <div class="fwd-desc">Catch wrong export settings in 3ds Max/ZBrush before the file reaches the transfer tool.</div>
+      </div>
+      <div class="fwd-card">
+        <div class="fwd-lp">LP3 · Downstream</div>
+        <div class="fwd-title">Engine Import Preset System</div>
+        <div class="fwd-desc">Standardize scale and material paths at the Unity/Unreal boundary to prevent repeat failures.</div>
+      </div>
+      <div class="fwd-card">
+        <div class="fwd-lp">Scale</div>
+        <div class="fwd-title">Batch Asset Pipeline Manager</div>
+        <div class="fwd-desc">Extend the current tool from one file at a time to an entire asset library — production scale.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9: Close -->
+  <div class="slide" id="slide-9">
+    <div class="slide-tag">AI 180 · Spring 2026</div>
+    <div class="slide-title">The work stays<br><span class="highlight">mine.</span></div>
+    <div class="slide-sub">CLAUDE.md is on file in the repo. Five directives, encoded from practice, ready for the next project.</div>
+    <div style="margin-top:32px;display:flex;gap:24px;flex-wrap:wrap;">
+      <div class="origin">Live tool: ai-180-p1-snyder-cj.vercel.app</div>
+      <div class="origin" style="background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.2);color:var(--accent2)">Repo: InstinctiveUI/AI180_P1_Snyder_CJ</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Nav controls -->
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)" disabled>←</button>
+  <div class="dots" id="dots"></div>
+  <span class="nav-count" id="navCount">1 / 10</span>
+  <button id="nextBtn" onclick="navigate(1)">→</button>
+</div>
+
+<div class="key-hint">← → to navigate</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  // Build dots
+  const dotsEl = document.getElementById('dots');
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dotsEl.children[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, total - 1));
+    slides[current].classList.add('active');
+    dotsEl.children[current].classList.add('active');
+    document.getElementById('navCount').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+  }
+
+  function navigate(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+  });
+</script>
+</body>
+</html>

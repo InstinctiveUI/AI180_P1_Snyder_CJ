@@ -77,21 +77,14 @@
     .pq{border-left:2px solid var(--b-hi);padding:18px 30px;margin:44px 0;font-family:var(--serif);font-size:21px;font-style:italic;color:var(--b-hi);line-height:1.5;max-width:620px;}
 
     /* PIPELINE */
-    .pipeline-outer{margin-top:44px;width:100%;box-sizing:border-box;padding:0 32px;}
-    .pipeline{display:grid;grid-template-columns:1fr 64px 1fr 64px 1fr;align-items:stretch;gap:0;width:100%;}
-    .pr{display:flex;flex-direction:column;justify-content:space-between;padding:40px 36px;background:#07101e;border:1px solid #0e1f34;border-radius:8px;transition:background .2s;min-height:200px;}
-    .pr:hover{background:#0c1a30;}
-    .pr-app{font-family:var(--serif);font-size:clamp(16px,1.5vw,22px);color:var(--b-accent);margin-bottom:16px;line-height:1.3;}
-    .pr-desc{font-family:var(--sans);font-size:14px;color:#5a7898;line-height:1.65;flex:1;}
-    .pr-tag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:#3a5878;text-transform:uppercase;margin-top:22px;}
-    .pa{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#1e3a5c;font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-align:center;padding:8px 4px;line-height:1.4;}
-    .pa-arr{font-size:24px;color:#1a3a5a;line-height:1;}
-    @media(max-width:760px){
-      .pipeline-outer{padding:0 16px;}
-      .pipeline{grid-template-columns:1fr;}
-      .pa{flex-direction:row;padding:10px 20px;background:#050d1a;border:1px solid #0e1f34;border-radius:6px;font-size:9px;gap:10px;}
-      .pa-arr{font-size:16px;}
-    }
+    .pipeline{margin-top:44px;border:1px solid #1a1a1a;}
+    .pr{display:grid;grid-template-columns:190px 1fr 110px;gap:28px;align-items:center;padding:22px 28px;border-bottom:1px solid #0e1f34;background:#07101e;transition:background .2s;}
+    .pr:last-child{border-bottom:none;}.pr:hover{background:#0c1a30;}
+    .pr-app{font-family:var(--serif);font-size:15px;color:var(--b-accent);}
+    .pr-desc{font-family:var(--sans);font-size:13px;color:#5a7898;line-height:1.55;}
+    .pr-tag{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:#3a5878;text-align:right;text-transform:uppercase;}
+    .pa{padding:10px 28px;background:#050d1a;border-bottom:1px solid #0e1f34;font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:#2a4a6a;display:flex;align-items:center;gap:10px;}
+    @media(max-width:600px){.pr{grid-template-columns:1fr;}.pr-tag{text-align:left;}}
 
     /* PHASE GRID */
     .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;background:#0e1f34;border:1px solid #0e1f34;margin-top:44px;}
@@ -312,37 +305,25 @@
 </section>
 
 <!-- §02 PIPELINE -->
-<section id="pipeline" class="bg-b fi" style="padding:96px 0;border-bottom:1px solid #0a1828;">
-  <div class="si" style="padding:0 56px;">
+<section id="pipeline" class="bs bg-b fi">
+  <div class="si">
     <div class="sec-hd"><span class="sec-num">02</span><h2 class="sec-title">The Pipeline</h2></div>
     <div class="prose"><p>The 3D model lifecycle runs through at least four distinct environments before an asset reaches a shipped game. Each handoff is a potential failure point.</p></div>
-  </div>
-  <div class="pipeline-outer">
     <div class="pipeline">
-      <div class="pr">
-        <div class="pr-app">3ds Max / ZBrush</div>
-        <div class="pr-desc">Primary authoring. Model created in the application's native coordinate system, scale, and mesh topology. The origin of every transfer problem.</div>
-        <div class="pr-tag">Source</div>
-      </div>
-      <div class="pa"><div class="pa-arr">→</div>EXPORT<br>scale · normals<br>format</div>
+      <div class="pr"><div class="pr-app">3ds Max / ZBrush</div><div class="pr-desc">Primary authoring. Model created in the application's native coordinate system, scale, and mesh topology.</div><div class="pr-tag">Source</div></div>
+      <div class="pa">↓ &nbsp; EXPORT — format choice, scale, axis orientation</div>
       <div class="pr" style="background:#0c1830;border-color:#1a3a60;">
         <div class="pr-app" style="color:var(--b-hi)">3D Model Transfer Tool</div>
         <div class="pr-desc">Analysis, auto-fix, and format conversion. Detects axis mismatches, scale errors, inverted normals, non-manifold geometry, and disconnected debris.</div>
-        <div class="pr-tag" style="color:var(--b-hi)">⚡ Leverage Point</div>
+        <div class="pr-tag" style="color:var(--b-hi)">Leverage Point</div>
       </div>
-      <div class="pa"><div class="pa-arr">→</div>IMPORT<br>cleaned file<br>correct format</div>
-      <div class="pr">
-        <div class="pr-app">Unity / Unreal Engine</div>
-        <div class="pr-desc">Destination environment. The model is rigged, lit, and integrated into the game world. Errors here are expensive to trace back.</div>
-        <div class="pr-tag">Target</div>
-      </div>
+      <div class="pa">↓ &nbsp; IMPORT — cleaned file, correct format</div>
+      <div class="pr"><div class="pr-app">Unity / Unreal Engine</div><div class="pr-desc">Destination environment. The model is rigged, lit, and integrated into the game world. Errors here are expensive to trace back.</div><div class="pr-tag">Target</div></div>
     </div>
-  </div>
-  <div class="si" style="padding:0 56px;">
     <div class="prose" style="margin-top:40px;"><p>The transfer tool is not one factor among several — it is <strong>the hinge</strong>. Everything on the source side collapses to a single moment when the file crosses into the destination environment. That moment is where the tool operates.</p></div>
     <div style="margin-top:44px;">
       <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#2e5070;margin-bottom:14px;">Interactive Lifecycle Map</div>
-      {% include '_pipeline_embed.html' %}
+      <iframe src="/pipeline" style="width:100%;height:780px;border:1px solid #0e1f34;border-radius:8px;display:block;" loading="lazy" title="3D Model Lifecycle Pipeline"></iframe>
     </div>
   </div>
 </section>
@@ -495,13 +476,13 @@
     </div>
     <div class="fqt" style="margin-top:56px">
       <div style="background:#0c1810;padding:14px 32px;border-bottom:1px solid #112213;display:grid;grid-template-columns:240px 1fr 40px;gap:20px"><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#444;text-transform:uppercase">The Five Questions</div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#444;text-transform:uppercase">Response</div><div></div></div>
-      <div class="fqr"><div class="fqq">Can I defend this?</div><div class="fqa">Someone could argue that directing AI to build something is not really your work — but that framing is wrong. I changed and updated code myself; AI helped with coding but did not build the tool independently. Every consequential decision was mine.</div><div class="fqc">✓</div></div>
-      <div class="fqr"><div class="fqq">Is this mine?</div><div class="fqa">Yes, with honesty about where Claude contributed. The problem came from my own experience as a game developer — Claude had no part in identifying it. Where Claude did heavy lifting was the Vercel deployment; that work would have taken days instead of hours without it.</div><div class="fqc">✓</div></div>
-      <div class="fqr"><div class="fqq">Did I verify?</div><div class="fqa">Yes, partially. I ran real 3D models from my own pipeline through the tool — with no prior knowledge of whether they were clean or broken. The tool ran and produced results. I did not test intentionally broken files or edge cases.</div><div class="fqc">✓</div></div>
-      <div class="fqr"><div class="fqq">Would I teach this?</div><div class="fqa">Yes. Including the systems mapping and leverage point reasoning. LP2 is the central leverage point because it is the specific bottleneck every game developer hits — that reasoning comes from experience, not theory, and I can defend it without notes.</div><div class="fqc">✓</div></div>
-      <div class="fqr"><div class="fqq">Is my disclosure honest?</div><div class="fqa">Yes. The short disclosure was revised during final review to add that Claude helped with coding — the earlier draft left that out. The wording "helped with coding" is accurate; "wrote the code" would have implied sole authorship, which is wrong.</div><div class="fqc">✓</div></div>
+      <div class="fqr"><div class="fqq">Can I defend this?</div><div class="fqa">Yes. The tool solves a problem I have and will continue to have. Every decision traces back to that use case.</div><div class="fqc">✓</div></div>
+      <div class="fqr"><div class="fqq">Is this mine?</div><div class="fqa">Yes. I identified the problem, defined the pipeline, directed the build, and tested with real 3D model files.</div><div class="fqc">✓</div></div>
+      <div class="fqr"><div class="fqq">Did I verify?</div><div class="fqa">Yes. I ran actual files through the tool and reviewed every code change before it was applied.</div><div class="fqc">✓</div></div>
+      <div class="fqr"><div class="fqq">Would I teach this?</div><div class="fqa">Yes. I can walk someone through the pipeline and use the tool to demonstrate the transfer problems it solves.</div><div class="fqc">✓</div></div>
+      <div class="fqr"><div class="fqq">Is my disclosure honest?</div><div class="fqa">Yes. The AI use log accurately reflects how Claude was used — as builder and documentarian under my direction.</div><div class="fqc">✓</div></div>
     </div>
-    <div class="disc"><strong>AI COLLABORATION DISCLOSURE —</strong> This project was developed using the ESF five-phase process. Claude (Sonnet 4.6, Anthropic) was used as builder and documentarian throughout P3, working under my direction. Claude helped with coding, formatting documents, and managing deployment under my direction. Every decision about what to build, what to keep, and what to reject was mine. AI did not originate ideas or take control; I did. <strong>Records of Resistance:</strong> 3 documented. Position Statement on file. The author takes full responsibility for the accuracy and integrity of this work.</div>
+    <div class="disc"><strong>AI COLLABORATION DISCLOSURE —</strong> This project was developed using the ESF five-phase process. Claude (Sonnet 4.6, Anthropic) was used as builder and documentarian throughout P3, working under my direction. Claude wrote the application code, visualization, and ESF documentation based on my specifications. I directed the feature set, defined the use case, tested with real 3D model files, reviewed every code change, and made all consequential decisions. <strong>Records of Resistance:</strong> 3 documented. Position Statement on file. The author takes full responsibility for the accuracy and integrity of this work.</div>
   </div>
 </section>
 
@@ -710,6 +691,3 @@ document.querySelectorAll('.fi').forEach(el=>{el.classList.add('hidden');obs.obs
 </script>
 </body>
 </html>
-
-
-

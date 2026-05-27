@@ -35,7 +35,7 @@
 
   /* ── Header ── */
   .header {
-    padding: 28px 16px 20px;
+    padding: 28px 40px 20px;
     border-bottom: 1px solid var(--border);
     background: linear-gradient(180deg, #0a0c18 0%, var(--bg) 100%);
     display: flex;
@@ -71,7 +71,7 @@
 
   /* ── Progress Bar ── */
   .progress-bar-wrap {
-    padding: 14px 16px;
+    padding: 14px 40px;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     display: flex;
@@ -109,7 +109,7 @@
   .legend {
     display: flex;
     gap: 24px;
-    padding: 14px 16px;
+    padding: 14px 40px;
     border-bottom: 1px solid var(--border);
     flex-wrap: wrap;
   }
@@ -143,7 +143,7 @@
 
   /* ── Main Layout ── */
   .main {
-    padding: 24px 16px;
+    padding: 32px 40px;
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -215,7 +215,7 @@
   .phase-divider {
     display: flex;
     align-items: center;
-    padding: 0 16px 0 156px;
+    padding: 0 40px 0 180px;
     gap: 0;
     margin-top: 24px;
     margin-bottom: 8px;
@@ -597,16 +597,16 @@
 
   /* ── Responsive ── */
   @media (max-width: 900px) {
-    .main { padding: 12px 8px; }
-    .header { padding: 20px 8px 14px; }
-    .legend { padding: 10px 8px; }
-    .progress-bar-wrap { padding: 10px 8px; }
-    .phase-divider { padding: 0 8px 0 44px; }
+    .main { padding: 16px; }
+    .header { padding: 20px 16px 14px; }
+    .legend { padding: 10px 16px; }
+    .progress-bar-wrap { padding: 10px 16px; }
+    .phase-divider { padding: 0 16px 0 152px; }
     .lane-label { width: 36px; padding: 12px 4px; }
     .lane-label-inner { font-size: 9px; }
     .lane-icon { display: none; }
     .detail-panel { width: 100vw; }
-    .hint-bar { padding: 10px 8px; }
+    .hint-bar { padding: 10px 16px; }
   }
 
   /* ── Entrance animation ── */
