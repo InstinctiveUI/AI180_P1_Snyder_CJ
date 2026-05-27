@@ -1,7 +1,12 @@
 """
 3D Model Transfer Assistant - Flask Web App
 """
+import sys
 import os
+# Ensure local modules (analyzer, knowledge_base, claude_ai) are importable
+# when running as a Vercel serverless function, which does not add the
+# function's own directory to sys.path automatically.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import json
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory
