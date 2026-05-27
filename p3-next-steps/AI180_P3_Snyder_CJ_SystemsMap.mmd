@@ -42,4 +42,11 @@ flowchart TD
     %% ── Feedback Loop 4 (Reinforcing) — skill compounding ───
     TOOL -->|"🔺 Loop 4 · Reinforcing\nEach flagged error teaches\ncorrect export settings →\nCJ exports cleaner next time\n→ fewer errors reach tool\n→ more time for complex work\n→ expertise compounds"| CJ
 
-    %% ── Styling ───────────────────────────────────
+    %% ── Styling ──────────────────────────────────────────────
+    classDef actor   fill:#1e293b,stroke:#818cf8,color:#e2e8f0
+    classDef tool    fill:#0f172a,stroke:#2dd4bf,color:#e2e8f0
+    classDef engine  fill:#0f172a,stroke:#a78bfa,color:#e2e8f0
+
+    class CJ,MAX,ZBR actor
+    class TOOL tool
+    class UE,PIPE engine
