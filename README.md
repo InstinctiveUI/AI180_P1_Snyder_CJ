@@ -22,5 +22,10 @@ An exercise in self-observation across two phases:
 | `AI180_P1_Snyder_CJ_MermaidChart.png` | Rendered chart image |
 | `AI180_P1_Snyder_CJ_Brief.pdf` | Original project brief |
 
+## Links
+- [Process Book](p3-next-steps/AI180_P3_Snyder_CJ_Website.html)
+- [Cognitive Toolkit](p4-cognitive-toolkit/AI180_P4_Snyder_CJ_ToolkitArtifact.html)
+- [Toolkit Presentation](p3-next-steps/AI180_P3_Snyder_CJ_ToolkitPresentation.html)
+
 ## Course
 AI 180 — Week 2 Submission
