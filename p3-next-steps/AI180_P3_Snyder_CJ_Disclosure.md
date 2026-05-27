@@ -1,0 +1,1 @@
+This project was built with AI assistance. Claude helped with coding, formatting documents, and managing deployment — under my direction. Every decision about what to build, what to keep, and what to reject was mine. AI did not originate ideas or take control; I did.

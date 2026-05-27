@@ -1,15 +1,15 @@
 """
 3D Model Analyzer & Auto-Fixer
 Inspects uploaded model files for common transfer issues and attempts to repair them.
+trimesh and numpy are imported lazily (inside functions) to avoid Vercel cold-start timeout.
 """
 import os
-import trimesh
-import numpy as np
-import json
 
 
 def analyze_model(filepath):
-    """Analyze a 3D model file and return a detailed report."""
+    import trimesh
+    import numpy as np
+
     report = {
         "filename": os.path.basename(filepath),
         "format": os.path.splitext(filepath)[1].lower().strip('.'),
@@ -26,12 +26,11 @@ def analyze_model(filepath):
             "id": "load_failure",
             "title": "File Could Not Be Loaded",
             "severity": "critical",
-            "description": f"The file failed to load: {str(e)}",
+            "description": "The file failed to load: " + str(e),
             "auto_fixable": False
         })
         return report
 
-    # Handle scenes (multi-object files) vs single meshes
     if isinstance(loaded, trimesh.Scene):
         meshes = [g for g in loaded.geometry.values() if isinstance(g, trimesh.Trimesh)]
         if not meshes:
@@ -52,7 +51,8 @@ def analyze_model(filepath):
         report["warnings"].append("File loaded as an unsupported type. Attempting to process anyway.")
         try:
             mesh = loaded.to_mesh() if hasattr(loaded, 'to_mesh') else None
-        except:
+        except Exception as e:
+            report["warnings"].append("Could not convert object to mesh: " + str(e))
             mesh = None
         if mesh is None:
             report["issues"].append({
@@ -64,7 +64,6 @@ def analyze_model(filepath):
             })
             return report
 
-    # --- Basic Stats ---
     report["stats"].update({
         "vertices": len(mesh.vertices),
         "faces": len(mesh.faces),
@@ -74,7 +73,6 @@ def analyze_model(filepath):
         "euler_number": int(mesh.euler_number) if hasattr(mesh, 'euler_number') else None,
     })
 
-    # Bounding box & scale
     bounds = mesh.bounds
     dimensions = bounds[1] - bounds[0]
     report["stats"]["dimensions_mm"] = {
@@ -84,17 +82,14 @@ def analyze_model(filepath):
     }
     report["stats"]["bounding_box_volume"] = round(float(np.prod(dimensions)), 4)
 
-    # --- Issue Detection ---
-
-    # 1. Scale check
     max_dim = float(np.max(dimensions))
-    min_dim = float(np.min(dimensions))
+
     if max_dim > 10000:
         report["issues"].append({
             "id": "scale_too_large",
             "title": "Model Appears Extremely Large",
             "severity": "warning",
-            "description": f"Largest dimension is {max_dim:.1f} units. This may indicate a meters/millimeters mismatch. Most 3D print slicers expect millimeters.",
+            "description": "Largest dimension is " + str(round(max_dim, 1)) + " units. May indicate a meters/millimeters mismatch.",
             "auto_fixable": True,
             "fix_action": "scale_to_mm"
         })
@@ -104,27 +99,24 @@ def analyze_model(filepath):
             "id": "scale_too_small",
             "title": "Model Appears Extremely Small",
             "severity": "warning",
-            "description": f"Largest dimension is {max_dim:.6f} units. The model may be in meters when millimeters are expected.",
+            "description": "Largest dimension is " + str(round(max_dim, 6)) + " units. Model may be in meters when millimeters are expected.",
             "auto_fixable": True,
             "fix_action": "scale_to_mm"
         })
         report["fixable"].append("scale_to_mm")
 
-    # 2. Non-manifold / watertight check
     if not mesh.is_watertight:
         report["issues"].append({
             "id": "not_watertight",
             "title": "Non-Watertight Mesh (Non-Manifold)",
             "severity": "error",
-            "description": "The mesh has holes, open edges, or non-manifold geometry. This will cause problems in 3D printing and some game engines.",
+            "description": "The mesh has holes, open edges, or non-manifold geometry. This causes problems in 3D printing and some game engines.",
             "auto_fixable": True,
             "fix_action": "fill_holes"
         })
         report["fixable"].append("fill_holes")
 
-    # 3. Inverted normals check
     if hasattr(mesh, 'face_normals') and len(mesh.face_normals) > 0:
-        # Check if the mesh volume is negative (indicating flipped normals)
         try:
             if mesh.is_watertight and mesh.volume < 0:
                 report["issues"].append({
@@ -136,10 +128,9 @@ def analyze_model(filepath):
                     "fix_action": "fix_normals"
                 })
                 report["fixable"].append("fix_normals")
-        except:
-            pass
+        except Exception as e:
+            report["warnings"].append("Could not check inverted normals: " + str(e))
 
-    # Winding consistency check
     try:
         if not mesh.is_winding_consistent:
             report["issues"].append({
@@ -151,84 +142,84 @@ def analyze_model(filepath):
                 "fix_action": "fix_winding"
             })
             report["fixable"].append("fix_winding")
-    except:
-        pass
+    except Exception as e:
+        report["warnings"].append("Could not check winding consistency: " + str(e))
 
-    # 4. Degenerate faces
-    non_degen = mesh.nondegenerate_faces
-    degen_count = len(mesh.faces) - non_degen.sum() if hasattr(non_degen, 'sum') else 0
-    if degen_count > 0:
-        report["issues"].append({
-            "id": "degenerate_faces",
-            "title": f"Degenerate Faces Detected ({degen_count})",
-            "severity": "warning",
-            "description": f"Found {degen_count} zero-area or collapsed faces. These can cause rendering artifacts and boolean operation failures.",
-            "auto_fixable": True,
-            "fix_action": "remove_degenerate"
-        })
-        report["fixable"].append("remove_degenerate")
+    try:
+        non_degen = mesh.nondegenerate_faces
+        degen_count = len(mesh.faces) - non_degen.sum() if hasattr(non_degen, 'sum') else 0
+        if degen_count > 0:
+            report["issues"].append({
+                "id": "degenerate_faces",
+                "title": "Degenerate Faces Detected (" + str(degen_count) + ")",
+                "severity": "warning",
+                "description": "Found " + str(degen_count) + " zero-area or collapsed faces. These can cause rendering artifacts.",
+                "auto_fixable": True,
+                "fix_action": "remove_degenerate"
+            })
+            report["fixable"].append("remove_degenerate")
+    except Exception as e:
+        report["warnings"].append("Could not check degenerate faces: " + str(e))
 
-    # 5. Duplicate faces
     try:
         unique_faces = np.unique(np.sort(mesh.faces, axis=1), axis=0)
         dup_count = len(mesh.faces) - len(unique_faces)
         if dup_count > 0:
             report["issues"].append({
                 "id": "duplicate_faces",
-                "title": f"Duplicate Faces ({dup_count})",
+                "title": "Duplicate Faces (" + str(dup_count) + ")",
                 "severity": "warning",
-                "description": f"Found {dup_count} duplicate faces. These waste memory and can cause z-fighting in renderers.",
+                "description": "Found " + str(dup_count) + " duplicate faces. These waste memory and can cause z-fighting.",
                 "auto_fixable": True,
                 "fix_action": "remove_duplicates"
             })
             report["fixable"].append("remove_duplicates")
-    except:
-        pass
+    except Exception as e:
+        report["warnings"].append("Could not check duplicate faces: " + str(e))
 
-    # 6. High poly count warning
     if len(mesh.faces) > 500000:
         report["issues"].append({
             "id": "high_poly",
-            "title": f"High Polygon Count ({len(mesh.faces):,} faces)",
+            "title": "High Polygon Count (" + str(len(mesh.faces)) + " faces)",
             "severity": "info",
-            "description": "Very high polygon count may cause performance issues in game engines and CAD software. Consider decimating for transfer.",
+            "description": "Very high polygon count may cause performance issues in game engines. Consider decimating for transfer.",
             "auto_fixable": True,
             "fix_action": "decimate"
         })
         report["fixable"].append("decimate")
 
-    # 7. Disconnected components
     try:
         split = mesh.split(only_watertight=False)
         if len(split) > 1:
             tiny = sum(1 for s in split if len(s.faces) < 10)
-            report["warnings"].append(f"Model has {len(split)} disconnected components ({tiny} with <10 faces — possible debris).")
+            report["warnings"].append("Model has " + str(len(split)) + " disconnected components (" + str(tiny) + " with <10 faces).")
             if tiny > 0:
                 report["issues"].append({
                     "id": "mesh_debris",
-                    "title": f"Mesh Debris Detected ({tiny} tiny components)",
+                    "title": "Mesh Debris Detected (" + str(tiny) + " tiny components)",
                     "severity": "info",
-                    "description": f"Found {tiny} very small disconnected components that may be leftover boolean artifacts.",
+                    "description": "Found " + str(tiny) + " very small disconnected components that may be leftover boolean artifacts.",
                     "auto_fixable": True,
                     "fix_action": "remove_debris"
                 })
                 report["fixable"].append("remove_debris")
-    except:
-        pass
+    except Exception as e:
+        report["warnings"].append("Could not check disconnected components: " + str(e))
 
-    # If no issues found
     if not report["issues"]:
-        report["warnings"].append("No issues detected! This model looks clean for transfer.")
+        report["warnings"].append("No issues detected. This model looks clean for transfer.")
 
     return report
 
 
 def fix_model(filepath, fixes_to_apply, output_format="stl"):
-    """Apply fixes to a model and export the repaired version."""
+    import trimesh
+    import numpy as np
+
     try:
         loaded = trimesh.load(filepath, force=None)
     except Exception as e:
-        return {"success": False, "error": f"Failed to load: {str(e)}"}
+        return {"success": False, "error": "Failed to load: " + str(e)}
 
     if isinstance(loaded, trimesh.Scene):
         meshes = [g for g in loaded.geometry.values() if isinstance(g, trimesh.Trimesh)]
@@ -240,24 +231,21 @@ def fix_model(filepath, fixes_to_apply, output_format="stl"):
 
     applied_fixes = []
 
-    # Scale fix
     if "scale_to_mm" in fixes_to_apply:
         max_dim = float(np.max(mesh.bounds[1] - mesh.bounds[0]))
         if max_dim > 10000:
             mesh.apply_scale(0.001)
-            applied_fixes.append("Scaled down (assumed meters -> millimeters)")
+            applied_fixes.append("Scaled down (assumed meters to millimeters)")
         elif max_dim < 0.1:
             mesh.apply_scale(1000.0)
-            applied_fixes.append("Scaled up (assumed meters -> millimeters)")
+            applied_fixes.append("Scaled up (assumed meters to millimeters)")
 
-    # Remove degenerate faces
     if "remove_degenerate" in fixes_to_apply:
         mask = mesh.nondegenerate_faces
         removed = len(mesh.faces) - mask.sum()
         mesh.update_faces(mask)
-        applied_fixes.append(f"Removed {removed} degenerate faces")
+        applied_fixes.append("Removed " + str(removed) + " degenerate faces")
 
-    # Remove duplicate faces
     if "remove_duplicates" in fixes_to_apply:
         before = len(mesh.faces)
         sorted_faces = np.sort(mesh.faces, axis=1)
@@ -267,21 +255,18 @@ def fix_model(filepath, fixes_to_apply, output_format="stl"):
         mesh.update_faces(mask)
         removed = before - len(mesh.faces)
         if removed > 0:
-            applied_fixes.append(f"Removed {removed} duplicate faces")
+            applied_fixes.append("Removed " + str(removed) + " duplicate faces")
 
-    # Fix normals
     if "fix_normals" in fixes_to_apply or "fix_winding" in fixes_to_apply:
         mesh.fix_normals()
         applied_fixes.append("Fixed face normals and winding order")
 
-    # Fill holes (attempt to make watertight)
     if "fill_holes" in fixes_to_apply:
         trimesh.repair.fill_holes(mesh)
         trimesh.repair.fix_normals(mesh)
         trimesh.repair.fix_winding(mesh)
         applied_fixes.append("Filled holes and repaired mesh")
 
-    # Remove debris
     if "remove_debris" in fixes_to_apply:
         components = mesh.split(only_watertight=False)
         if len(components) > 1:
@@ -290,30 +275,30 @@ def fix_model(filepath, fixes_to_apply, output_format="stl"):
             if significant:
                 mesh = trimesh.util.concatenate(significant)
                 removed = len(components) - len(significant)
-                applied_fixes.append(f"Removed {removed} tiny debris components")
+                applied_fixes.append("Removed " + str(removed) + " tiny debris components")
 
-    # Decimate
     if "decimate" in fixes_to_apply:
         target = min(250000, len(mesh.faces))
         try:
             mesh = mesh.simplify_quadric_decimation(target)
-            applied_fixes.append(f"Decimated to {len(mesh.faces):,} faces")
-        except:
-            applied_fixes.append("Decimation not available (install fast_simplification for this feature)")
+            applied_fixes.append("Decimated to " + str(len(mesh.faces)) + " faces")
+        except Exception as e:
+            applied_fixes.append("Decimation failed: " + str(e))
 
-    # Export
     basename = os.path.splitext(os.path.basename(filepath))[0]
     ext_map = {"stl": ".stl", "obj": ".obj", "glb": ".glb", "gltf": ".gltf", "ply": ".ply"}
     ext = ext_map.get(output_format.lower(), ".stl")
-    output_name = f"{basename}_fixed{ext}"
-    output_dir = os.path.join(os.path.dirname(filepath), "..", "fixed")
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, output_name)
+    output_name = basename + "_fixed" + ext
+
+    import os as _os
+    output_dir = '/tmp/fixed' if _os.environ.get('VERCEL') == '1' else _os.path.join(_os.path.dirname(filepath), '..', 'fixed')
+    _os.makedirs(output_dir, exist_ok=True)
+    output_path = _os.path.join(output_dir, output_name)
 
     try:
         mesh.export(output_path, file_type=output_format.lower())
     except Exception as e:
-        return {"success": False, "error": f"Export failed: {str(e)}"}
+        return {"success": False, "error": "Export failed: " + str(e)}
 
     return {
         "success": True,

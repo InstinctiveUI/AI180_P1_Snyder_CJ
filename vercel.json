@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "3d-model-transfer-tool/app.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "3d-model-transfer-tool/templates/**",
+          "3d-model-transfer-tool/*.py"
+        ]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "3d-model-transfer-tool/app.py"
+    }
+  ]
+}

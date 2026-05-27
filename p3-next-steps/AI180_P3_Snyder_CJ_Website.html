@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Model Lifecycle Pipeline — Process Book</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #222222;
+      --accent: #e8e0d0;
+      --muted: #555555;
+      --dim: #888888;
+      --highlight: #c8b89a;
+      --red: #c0392b;
+      --mono: 'Courier New', Courier, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--accent);
+      font-family: Georgia, 'Times New Roman', serif;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 60px 60px;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 48px;
+    }
+
+    .hero-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: clamp(52px, 9vw, 120px);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--highlight);
+    }
+
+    .hero-sub {
+      font-size: clamp(14px, 2vw, 20px);
+      color: var(--dim);
+      font-style: italic;
+      margin-top: 28px;
+      max-width: 560px;
+      line-height: 1.5;
+    }
+
+    .hero-meta {
+      margin-top: 64px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta span { color: var(--dim); }
+    .hero-meta strong { color: var(--accent); font-weight: normal; }
+
+    .scroll-cue {
+      position: absolute;
+      bottom: 40px;
+      left: 60px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .scroll-cue::before {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 1px;
+      background: var(--muted);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--dim);
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── SECTIONS ── */
+    section {
+      padding: 100px 60px;
+      border-bottom: 1px solid var(--border);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 24px;
+      margin-bottom: 64px;
+    }
+
+    .section-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      min-width: 32px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      color: var(--accent);
+    }
+
+    /* ── BODY TEXT ── */
+    .body-text {
+      max-width: 680px;
+      font-size: 17px;
+      line-height: 1.8;
+      color: #bbb;
+    }
+
+    .body-text p + p { margin-top: 20px; }
+
+    .body-text strong { color: var(--accent); font-weight: normal; }
+
+    /* ── PULL QUOTE ── */
+    .pull-quote {
+      border-left: 2px solid var(--highlight);
+      padding: 20px 32px;
+      margin: 48px 0;
+      font-size: 22px;
+      font-style: italic;
+      color: var(--highlight);
+      line-height: 1.5;
+      max-width: 640px;
+    }
+
+    /* ── TWO-COL ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      margin-top: 48px;
+    }
+
+    @media (max-width: 768px) {
+      .two-col { grid-template-columns: 1fr; }
+      nav, .hero, section { padding-left: 24px; padding-right: 24px; }
+      .scroll-cue { left: 24px; }
+    }
+
+    /* ── PHASE CARDS ── */
+    .phase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-top: 48px;
+    }
+
+    .phase-card {
+      background: var(--bg);
+      padding: 32px 28px;
+      transition: background 0.2s;
+    }
+
+    .phase-card:hover { background: var(--surface); }
+
+    .phase-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .phase-name {
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .phase-desc {
+      font-size: 13px;
+      color: var(--dim);
+      line-height: 1.6;
+    }
+
+    /* ── RESISTANCE CARDS ── */
+    .resistance-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-top: 48px;
+    }
+
+    .resistance-item {
+      background: var(--bg);
+      padding: 36px 40px;
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 32px;
+      transition: background 0.2s;
+    }
+
+    .resistance-item:hover { background: var(--surface); }
+
+    .ror-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--red);
+      letter-spacing: 0.1em;
+      padding-top: 4px;
+    }
+
+    .ror-what {
+      font-size: 13px;
+      font-family: var(--mono);
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .ror-title {
+      font-size: 18px;
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-weight: 400;
+    }
+
+    .ror-body {
+      font-size: 14px;
+      color: var(--dim);
+      line-height: 1.6;
+    }
+
+    /* ── PIPELINE DIAGRAM ── */
+    .pipeline {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .pipeline-row {
+      background: var(--bg);
+      padding: 24px 32px;
+      display: grid;
+      grid-template-columns: 200px 1fr 120px;
+      gap: 32px;
+      align-items: center;
+      transition: background 0.2s;
+    }
+
+    .pipeline-row:hover { background: var(--surface); }
+
+    .pipeline-app {
+      font-size: 14px;
+      color: var(--accent);
+    }
+
+    .pipeline-flow {
+      font-size: 13px;
+      color: var(--dim);
+      line-height: 1.5;
+    }
+
+    .pipeline-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    .pipeline-arrow {
+      color: var(--muted);
+      font-size: 18px;
+      text-align: center;
+      padding: 8px 32px;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    /* ── TOOL FEATURES ── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-top: 48px;
+    }
+
+    .feature-card {
+      background: var(--bg);
+      padding: 36px 32px;
+      transition: background 0.2s;
+    }
+
+    .feature-card:hover { background: var(--surface); }
+
+    .feature-icon {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--highlight);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .feature-title {
+      font-size: 17px;
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-weight: 400;
+    }
+
+    .feature-desc {
+      font-size: 13px;
+      color: var(--dim);
+      line-height: 1.6;
+    }
+
+    /* ── FIVE QUESTIONS ── */
+    .questions {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .question-row {
+      background: var(--bg);
+      padding: 28px 36px;
+      display: grid;
+      grid-template-columns: 280px 1fr 48px;
+      gap: 24px;
+      align-items: start;
+      transition: background 0.2s;
+    }
+
+    .question-row:hover { background: var(--surface); }
+
+    .q-text {
+      font-size: 14px;
+      color: var(--dim);
+      font-style: italic;
+    }
+
+    .q-answer {
+      font-size: 14px;
+      color: #bbb;
+      line-height: 1.6;
+    }
+
+    .q-check {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--highlight);
+      text-align: right;
+      padding-top: 2px;
+    }
+
+    /* ── DISCLOSURE STRIP ── */
+    .disclosure {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 40px;
+      margin-top: 64px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.8;
+      letter-spacing: 0.02em;
+    }
+
+    .disclosure strong {
+      color: var(--dim);
+      font-weight: normal;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 60px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: gap;
+    }
+
+    .footer-brand {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .footer-right {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-align: right;
+    }
+
+    /* ── DIVIDER LINE ── */
+    .rule {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 48px 0;
+    }
+
+    /* ── INLINE TAG ── */
+    .tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    /* ── FADE-IN ANIMATION ── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">CJ Snyder · AI 180 · P3</a>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#pipeline">Pipeline</a></li>
+    <li><a href="#tool">Tool</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#resistance">Resistance</a></li>
+    <li><a href="#reflect">Reflect</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="eyebrow">PROCESS BOOK</div>
+  <div class="hero-label">3D Model Lifecycle Pipeline</div>
+  <h1 class="hero-title">The Transfer<br><em>Problem</em></h1>
+  <p class="hero-sub">A tool for moving 3D models between applications without breaking them — and a map of the system that creates the problem in the first place.</p>
+  <div class="hero-meta">
+    <div><span>Author</span>&nbsp;&nbsp;<strong>CJ Snyder</strong></div>
+    <div><span>Course</span>&nbsp;&nbsp;<strong>AI 180</strong></div>
+    <div><span>Project</span>&nbsp;&nbsp;<strong>P3</strong></div>
+    <div><span>Year</span>&nbsp;&nbsp;<strong>2026</strong></div>
+  </div>
+  <div class="scroll-cue">Scroll to read</div>
+</div>
+
+<!-- SECTION 1: THE PROBLEM -->
+<section id="problem" class="fade-in">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">The Problem</h2>
+  </div>
+
+  <div class="body-text">
+    <p>I work in 3D modeling for game development. The pipeline moves through multiple applications — modeling in <strong>3ds Max</strong> or <strong>ZBrush</strong>, then bringing the result into a game engine like <strong>Unity</strong> or <strong>Unreal</strong>. Every time a model crosses that boundary, something can break.</p>
+    <p>Axes interpret differently. Scale is off. Faces invert. Normals flip. What looked clean in the source application arrives broken in the destination.</p>
+  </div>
+
+  <div class="pull-quote">
+    "My default workflow was to wait for the problem and then look it up. That worked until it didn't."
+  </div>
+
+  <div class="body-text">
+    <p>When deadline pressure was high, debugging a broken import could eat hours. The knowledge existed — I just had no way to apply it automatically, at the moment of transfer, to a specific file.</p>
+    <p>P3 was about building that tool: a program that could detect transfer issues, explain them in plain language, apply targeted fixes, and be deployed somewhere accessible — no local Python setup required.</p>
+  </div>
+</section>
+
+<!-- SECTION 2: THE PIPELINE -->
+<section id="pipeline" class="fade-in">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">The Pipeline</h2>
+  </div>
+
+  <div class="body-text">
+    <p>The 3D model lifecycle runs through at least four distinct environments before an asset reaches a shipped game. Each handoff is a potential failure point.</p>
+  </div>
+
+  <div class="pipeline">
+    <div class="pipeline-row">
+      <div class="pipeline-app">3ds Max / ZBrush</div>
+      <div class="pipeline-flow">Primary authoring. Model is created in the application's native coordinate system, scale, and mesh topology.</div>
+      <div class="pipeline-tag">Source</div>
+    </div>
+    <div class="pipeline-arrow">↓ &nbsp; EXPORT &nbsp; — &nbsp; format choice, scale, axis orientation</div>
+    <div class="pipeline-row">
+      <div class="pipeline-app">3D Model Transfer Tool</div>
+      <div class="pipeline-flow">Analysis, auto-fix, and format conversion. Detects axis mismatches, scale errors, inverted normals, non-manifold geometry, and disconnected debris.</div>
+      <div class="pipeline-tag" style="color: var(--highlight);">Leverage Point</div>
+    </div>
+    <div class="pipeline-arrow">↓ &nbsp; IMPORT &nbsp; — &nbsp; cleaned file, correct format</div>
+    <div class="pipeline-row">
+      <div class="pipeline-app">Unity / Unreal Engine</div>
+      <div class="pipeline-flow">Destination environment. The model is rigged, lit, and integrated into the game world. Errors here are expensive to trace back.</div>
+      <div class="pipeline-tag">Target</div>
+    </div>
+  </div>
+
+  <div class="body-text" style="margin-top: 40px;">
+    <p>The transfer tool is not one factor among several — it is <strong>the hinge</strong>. Everything on the source side collapses to a single moment when the file crosses into the destination environment. That moment is where the tool operates.</p>
+  </div>
+</section>
+
+<!-- SECTION 3: THE TOOL -->
+<section id="tool" class="fade-in">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">The Tool</h2>
+  </div>
+
+  <div class="body-text">
+    <p>A Python/Flask web application deployed on Vercel. Upload a 3D model file, select source and target applications, and get an analysis report, AI-powered explanation, targeted fixes, and a downloadable repaired file.</p>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">— Analyze</div>
+      <div class="feature-title">Mesh Analysis</div>
+      <div class="feature-desc">Inspects vertex/face counts, watertight integrity, normal orientation, degenerate faces, scale consistency, and disconnected debris. Every issue flagged with severity.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">— Fix</div>
+      <div class="feature-title">Auto-Fix</div>
+      <div class="feature-desc">Targeted repairs based on what the analysis detected: hole-filling, normal correction, scale adjustment, debris removal. The user selects the output format.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">— Explain</div>
+      <div class="feature-title">AI Summary</div>
+      <div class="feature-desc">Claude translates the analysis report into plain English — what was found, why it matters for the specific source-to-target workflow, and what to do about it.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">— Ask</div>
+      <div class="feature-title">Chat Interface</div>
+      <div class="feature-desc">Multi-turn conversation about the specific file. Ask why a face is inverted, what FBX loses on import to Unreal, or whether the mesh is printable.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">— Know</div>
+      <div class="feature-title">Format Knowledge Base</div>
+      <div class="feature-desc">Application-to-application format recommendations with known transfer issues: broken materials, animation loss, scale factors, axis mismatches — documented per workflow.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">— Log</div>
+      <div class="feature-title">Activity Log</div>
+      <div class="feature-desc">Every analysis, fix, and download is recorded in a Markdown log with timestamps and explanations. The tool accounts for what it does.</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 48px;">
+    <span class="tag">STL</span>
+    <span class="tag">OBJ</span>
+    <span class="tag">FBX</span>
+    <span class="tag">GLB / GLTF</span>
+    <span class="tag">PLY</span>
+    <span class="tag">DAE</span>
+    <span class="tag">3DS</span>
+  </div>
+</section>
+
+<!-- SECTION 4: THE PROCESS -->
+<section id="process" class="fade-in">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">The Process</h2>
+  </div>
+
+  <div class="body-text">
+    <p>P3 was developed using the Epistemic Stewardship Framework — a five-phase process that keeps thinking on the human side by requiring a position before AI enters the work.</p>
+  </div>
+
+  <div class="phase-grid">
+    <div class="phase-card">
+      <div class="phase-num">Phase 01</div>
+      <div class="phase-name">Inquire</div>
+      <div class="phase-desc">Defined the problem from direct experience. Identified the pipeline, the failure points, and what the P2 tool couldn't do yet. No AI.</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 02</div>
+      <div class="phase-name">Position</div>
+      <div class="phase-desc">Written before any AI engagement: the use case, what couldn't be compromised, and where the line was. The anchor for every decision that followed.</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 03</div>
+      <div class="phase-name">Explore</div>
+      <div class="phase-desc">Systems map, leverage point identification, deployment platform. Where AI challenged the position — and where the position held.</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 04</div>
+      <div class="phase-name">Make</div>
+      <div class="phase-desc">Built the application: AI integration, security hardening, Vercel deployment, environment-aware configuration. Every change reviewed before applied.</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 05</div>
+      <div class="phase-name">Reflect</div>
+      <div class="phase-desc">Documented what was kept, revised, and rejected. Assessed where the position held and where it was tested hardest.</div>
+    </div>
+  </div>
+
+  <div class="pull-quote" style="margin-top: 64px;">
+    "The tool still requires deliberate action from the user for everything consequential. It analyzes, suggests, and flags — but it does not modify a file without a click."
+  </div>
+</section>
+
+<!-- SECTION 5: RECORDS OF RESISTANCE -->
+<section id="resistance" class="fade-in">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">Records of Resistance</h2>
+  </div>
+
+  <div class="body-text">
+    <p>Three documented moments where I rejected or substantially revised AI output. These records make the creative judgment visible — not what the AI produced, but what I decided not to use and why.</p>
+  </div>
+
+  <div class="resistance-list">
+    <div class="resistance-item">
+      <div class="ror-num">RoR<br>02</div>
+      <div>
+        <div class="ror-what">AI suggested → Abandon the approach</div>
+        <div class="ror-title">The git lock file was "a fundamental incompatibility."</div>
+        <div class="ror-body">Claude concluded a persistent lock file on the OneDrive filesystem was unsolvable from the sandbox and told me to run git commands from my own terminal. I rejected the surrender and directed it to find a workaround. It solved the problem by cloning to a location outside the locked filesystem.</div>
+      </div>
+    </div>
+    <div class="resistance-item">
+      <div class="ror-num">RoR<br>03</div>
+      <div>
+        <div class="ror-what">AI suggested → Switch platforms</div>
+        <div class="ror-title">Vercel was the wrong platform for this app.</div>
+        <div class="ror-body">When I asked how to deploy on Vercel, Claude assessed the architecture and recommended Railway or Render instead. Accepting the redirect would have let the AI determine the scope of my project based on convenience. I held the platform choice. Claude adapted the app to Vercel's constraints — and those constraints became good design pressure.</div>
+      </div>
+    </div>
+    <div class="resistance-item">
+      <div class="ror-num">RoR<br>04</div>
+      <div>
+        <div class="ror-what">AI suggested → Three equal leverage points</div>
+        <div class="ror-title">The systems map flattened what I knew.</div>
+        <div class="ror-body">Claude presented export settings, the transfer tool, and engine import settings as a balanced set of leverage points. That framing was technically accurate but experientially wrong. From working in the pipeline, the transfer tool is the central one — not one of three equal variables. I corrected the framing. The map now reflects the relationship, not just the list.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: REFLECT -->
+<section id="reflect" class="fade-in">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2 class="section-title">Reflect</h2>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="body-text">
+        <p><strong>What I learned by directing the build</strong></p>
+        <p>I would not have built a deployable Flask application without AI. What I learned in the process was specific: how serverless environments change what code has to know about itself, what a path traversal vulnerability actually looks like, how Python 3 handles exception variable scope in a way that breaks closures.</p>
+        <p>I learned those things not by writing the code, but by holding responsibility for every change — reading the diffs, tracking down the failures, and making every call about what to apply.</p>
+      </div>
+    </div>
+    <div>
+      <div class="body-text">
+        <p><strong>What I would do differently</strong></p>
+        <p>I would build the systems map earlier. I made it toward the end of P3, but it was the artifact that clarified the problem better than anything else. Starting from the systems view would have given me cleaner decisions throughout.</p>
+        <p>The hardest thing to hold was staying focused on the actual behavior — does the right thing happen at the URL — rather than treating each new error as progress. That distinction took time to enforce.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="questions">
+    <div class="question-row" style="background: var(--surface); padding: 16px 36px;">
+      <div style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase;">The Five Questions</div>
+      <div style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase;">Response</div>
+      <div style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase;"></div>
+    </div>
+    <div class="question-row">
+      <div class="q-text">Can I defend this?</div>
+      <div class="q-answer">Yes. The tool solves a problem I have and will continue to have. Every decision traces back to that use case.</div>
+      <div class="q-check">✓</div>
+    </div>
+    <div class="question-row">
+      <div class="q-text">Is this mine?</div>
+      <div class="q-answer">Yes. I identified the problem, defined the pipeline, directed the build, and tested with real files.</div>
+      <div class="q-check">✓</div>
+    </div>
+    <div class="question-row">
+      <div class="q-text">Did I verify?</div>
+      <div class="q-answer">Yes. I ran actual 3D model files through the tool and reviewed every code change before it was applied.</div>
+      <div class="q-check">✓</div>
+    </div>
+    <div class="question-row">
+      <div class="q-text">Would I teach this?</div>
+      <div class="q-answer">Yes. I can walk someone through the pipeline and use the tool to demonstrate the transfer problems it solves.</div>
+      <div class="q-check">✓</div>
+    </div>
+    <div class="question-row">
+      <div class="q-text">Is my disclosure honest?</div>
+      <div class="q-answer">Yes. The AI use log accurately reflects how Claude was used — as builder and documentarian under my direction.</div>
+      <div class="q-check">✓</div>
+    </div>
+  </div>
+
+  <div class="disclosure">
+    <strong>AI COLLABORATION DISCLOSURE —</strong> This project was developed using the ESF five-phase process. Claude (Sonnet 4.6, Anthropic) was used as builder and documentarian throughout P3, working under my direction. Claude wrote the application code, visualization, and ESF documentation based on my specifications. I directed the feature set, defined the use case, tested with real 3D model files, reviewed every code change, and made all consequential decisions. Records of Resistance: 3 documented. Position Statement on file. The author takes full responsibility for the accuracy and integrity of this work.
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">3D Model Lifecycle Pipeline · CJ Snyder · AI 180 · P3 · 2026</div>
+  <div class="footer-right">Epistemic Stewardship Framework<br>Developed with Claude (Sonnet 4.6)</div>
+</footer>
+
+<script>
+  // Fade-in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(el => {
+      if (el.isIntersecting) {
+        el.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Active nav on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current
+        ? 'var(--accent)'
+        : '';
+    });
+  });
+</script>
+
+</body>
+</html>

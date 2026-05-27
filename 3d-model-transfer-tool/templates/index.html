@@ -1,891 +1,693 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Transfer Assistant</title>
-    <style>
-        :root {
-            --bg: #0f1117;
-            --surface: #1a1d27;
-            --surface2: #242836;
-            --border: #2e3347;
-            --text: #e4e6ef;
-            --text-dim: #8b8fa3;
-            --accent: #6c8aff;
-            --accent2: #4fc3f7;
-            --green: #4caf85;
-            --yellow: #f0c040;
-            --red: #e05555;
-            --orange: #e8944a;
-            --radius: 12px;
-        }
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>3D Model Lifecycle Pipeline — CJ Snyder · AI 180</title>
+  <style>
+    :root{
+      --mono:'Courier New',Courier,monospace;
+      --serif:Georgia,'Times New Roman',serif;
+      --sans:'Segoe UI',system-ui,-apple-system,sans-serif;
+      --b-accent:#dce8f8;--b-hi:#8ab4e0;--b-muted:#4a6080;--b-dim:#6a88aa;--b-bdr:#0f1e30;--b-red:#e05555;
+      --t-bg:#f5f0e8;--t-sur:#ede8de;--t-sur2:#e2dcd0;--t-bdr:#c4b8a8;
+      --t-txt:#2a2218;--t-dim:#7a6e60;--t-acc:#2a7a4e;--t-acc2:#1e6640;
+      --t-grn:#2a7a4e;--t-yel:#9a6a00;--t-red:#c0392b;--t-org:#b05820;
+      --r:12px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:18px 56px;background:rgba(4,8,20,.95);backdrop-filter:blur(14px);border-bottom:1px solid #0a1428;}
+    .nav-brand{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:#3a5878;text-decoration:none;text-transform:uppercase;}
+    .nav-links{display:flex;gap:28px;list-style:none;}
+    .nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:#2e4e70;text-decoration:none;text-transform:uppercase;transition:color .2s;}
+    .nav-links a:hover,.nav-links a.active{color:var(--b-accent);}
+    @media(max-width:700px){nav{padding:16px 20px;}.nav-links{gap:14px;}.nav-links a{font-size:9px;}}
 
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
+    /* HERO */
+    .hero{min-height:100vh;background:#050c1e;display:flex;flex-direction:column;justify-content:center;padding:100px 56px 72px;border-bottom:1px solid #0a1830;position:relative;}
+    .hero-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.32em;color:#444;text-transform:uppercase;margin-bottom:28px;}
+    .hero-title{font-family:var(--serif);font-size:clamp(54px,9vw,124px);font-weight:400;line-height:.95;letter-spacing:-.02em;color:var(--b-accent);}
+    .hero-title em{font-style:italic;color:var(--b-hi);}
+    .hero-sub{font-family:var(--serif);font-size:clamp(14px,1.8vw,19px);color:#3a5878;font-style:italic;margin-top:30px;max-width:540px;line-height:1.55;}
+    .hero-meta{margin-top:60px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:#2e4e70;display:flex;gap:32px;flex-wrap:wrap;}
+    .hero-meta strong{color:var(--b-accent);font-weight:normal;}
+    .hero-cta{margin-top:48px;display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--b-hi);text-decoration:none;border:1px solid #1a3050;padding:13px 24px;transition:all .25s;}
+    .hero-cta:hover{border-color:var(--b-hi);background:rgba(138,180,224,.07);}
+    .scroll-hint{position:absolute;bottom:36px;left:56px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#1e3858;text-transform:uppercase;display:flex;align-items:center;gap:10px;}
+    .scroll-hint::before{content:'';display:block;width:36px;height:1px;background:#1e3858;}
 
-        .header {
-            background: linear-gradient(135deg, #1a1d2f 0%, #252940 100%);
-            border-bottom: 1px solid var(--border);
-            padding: 24px 32px;
-            text-align: center;
-        }
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .header p { color: var(--text-dim); margin-top: 6px; font-size: 15px; }
+    /* SECTIONS */
+    .bs{padding:96px 56px;border-bottom:1px solid #0a1828;}
+    .si{max-width:1160px;margin:0 auto;}
+    .sec-hd{display:flex;align-items:baseline;gap:20px;margin-bottom:56px;}
+    .sec-num{font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:#2e5070;min-width:28px;}
+    .sec-title{font-family:var(--serif);font-size:clamp(26px,3.8vw,46px);font-weight:400;letter-spacing:-.01em;color:var(--b-accent);}
+    .bg-a{background:#06101e;}.bg-b{background:#080f20;}.bg-c{background:#0b1228;}.bg-d{background:#07101f;}.bg-e{background:#091422;}
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 32px 24px;
-        }
+    /* light sections — same eggshell as tool */
+    .bg-lite{background:#f5f0e8;border-bottom-color:#c4b8a8 !important;}
+    .bg-lite .sec-title{color:#2a2218;}
+    .bg-lite .sec-num{color:#8aa870;}
+    .bg-lite .prose{color:#6a5e50;}
+    .bg-lite .pq{border-left-color:#2a7a4e;color:#3a5a3a;}
+    .bg-lite .rl{border-color:#c4b8a8;}
+    .bg-lite .ri{background:#ede8de;border-bottom-color:#c4b8a8;}
+    .bg-lite .ri:hover{background:#e2dcd0;}
+    .bg-lite .rn{color:#2a7a4e;}
+    .bg-lite .rw{color:#8a7a6a;}
+    .bg-lite .rt{color:#2a2218;}
+    .bg-lite .rb{color:#6a5e50;}
+    .bg-lite .pgrid{background:#c4b8a8;border-color:#c4b8a8;}
+    .bg-lite .pc{background:#ede8de;}.bg-lite .pc:hover{background:#e2dcd0;}
+    .bg-lite .pn{color:#8a7a6a;}.bg-lite .pm{color:#2a2218;}.bg-lite .pd{color:#6a5e50;}
+    .bg-lite .fqt{border-color:#c4b8a8;}
+    .bg-lite .fqr{background:#ede8de;border-bottom-color:#c4b8a8;}
+    .bg-lite .fqr:hover{background:#e2dcd0;}
+    .bg-lite .fqq{color:#6a5e50;}.bg-lite .fqa{color:#4a3a2a;}.bg-lite .fqc{color:#2a7a4e;}
+    .bg-lite .disc{background:#f0ebe2;border-color:#c4b8a8;color:#6a5e50;}
+    .bg-lite .disc strong{color:#4a3a2a;}
 
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 28px;
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 4px;
-            border: 1px solid var(--border);
-        }
-        .tab {
-            flex: 1;
-            padding: 12px 16px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-dim);
-            transition: all 0.2s;
-        }
-        .tab:hover { color: var(--text); background: var(--surface2); }
-        .tab.active { color: var(--text); background: var(--accent); }
+    /* PROSE */
+    .prose{max-width:660px;font-family:var(--serif);font-size:17px;line-height:1.82;color:#6a90b8;}
+    .prose p+p{margin-top:20px;}
+    .prose strong{color:var(--b-accent);font-weight:normal;}
+    .pq{border-left:2px solid var(--b-hi);padding:18px 30px;margin:44px 0;font-family:var(--serif);font-size:21px;font-style:italic;color:var(--b-hi);line-height:1.5;max-width:620px;}
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+    /* PIPELINE */
+    .pipeline{margin-top:44px;border:1px solid #1a1a1a;}
+    .pr{display:grid;grid-template-columns:190px 1fr 110px;gap:28px;align-items:center;padding:22px 28px;border-bottom:1px solid #0e1f34;background:#07101e;transition:background .2s;}
+    .pr:last-child{border-bottom:none;}.pr:hover{background:#0c1a30;}
+    .pr-app{font-family:var(--serif);font-size:15px;color:var(--b-accent);}
+    .pr-desc{font-family:var(--sans);font-size:13px;color:#5a7898;line-height:1.55;}
+    .pr-tag{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:#3a5878;text-align:right;text-transform:uppercase;}
+    .pa{padding:10px 28px;background:#050d1a;border-bottom:1px solid #0e1f34;font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:#2a4a6a;display:flex;align-items:center;gap:10px;}
+    @media(max-width:600px){.pr{grid-template-columns:1fr;}.pr-tag{text-align:left;}}
 
-        /* Cards */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-        .card h2 {
-            font-size: 18px;
-            margin-bottom: 16px;
-            color: var(--accent2);
-        }
-        .card h3 {
-            font-size: 15px;
-            margin-bottom: 10px;
-            color: var(--text);
-        }
+    /* PHASE GRID */
+    .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;background:#0e1f34;border:1px solid #0e1f34;margin-top:44px;}
+    .pc{background:#0b1228;padding:28px 24px;transition:background .2s;}.pc:hover{background:#101a38;}
+    .pn{font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:#2e5070;margin-bottom:10px;}
+    .pm{font-family:var(--serif);font-size:18px;color:var(--b-accent);margin-bottom:10px;}
+    .pd{font-family:var(--sans);font-size:12px;color:#4a6888;line-height:1.6;}
 
-        /* Upload zone */
-        .upload-zone {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 48px 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 20px;
-        }
-        .upload-zone:hover, .upload-zone.dragover {
-            border-color: var(--accent);
-            background: rgba(108, 138, 255, 0.05);
-        }
-        .upload-zone .icon { font-size: 48px; margin-bottom: 12px; }
-        .upload-zone p { color: var(--text-dim); font-size: 14px; }
-        .upload-zone .formats { color: var(--text-dim); font-size: 12px; margin-top: 8px; opacity: 0.7; }
-        .upload-zone input[type="file"] { display: none; }
+    /* ROR */
+    .rl{margin-top:44px;border:1px solid #0e1f34;}
+    .ri{display:grid;grid-template-columns:44px 1fr;gap:28px;padding:32px 36px;background:#07101f;border-bottom:1px solid #0e1f34;transition:background .2s;}
+    .ri:last-child{border-bottom:none;}.ri:hover{background:#0c1a30;}
+    .rn{font-family:var(--mono);font-size:11px;color:var(--b-hi);letter-spacing:.1em;padding-top:3px;}
+    .rw{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#2e5070;margin-bottom:8px;}
+    .rt{font-family:var(--serif);font-size:18px;color:var(--b-accent);margin-bottom:8px;}
+    .rb{font-family:var(--sans);font-size:13px;color:#4a6888;line-height:1.65;}
 
-        /* Selects */
-        .select-row {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 16px;
-            align-items: end;
-            margin-bottom: 20px;
-        }
-        .select-group label {
-            display: block;
-            font-size: 13px;
-            color: var(--text-dim);
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
-        .select-group select {
-            width: 100%;
-            padding: 10px 14px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-size: 14px;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8fa3' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-        }
-        .select-group select:focus { outline: none; border-color: var(--accent); }
-        .arrow-icon { color: var(--text-dim); font-size: 24px; padding-bottom: 8px; text-align: center; }
+    /* 2-COL */
+    .tc{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:44px;}
+    @media(max-width:700px){.tc{grid-template-columns:1fr;}}
 
-        /* Buttons */
-        .btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: #5a7aee; }
-        .btn-green { background: var(--green); color: white; }
-        .btn-green:hover { background: #3d9e74; }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text);
-        }
-        .btn-outline:hover { background: var(--surface2); }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+    /* FIVE Q */
+    .fqt{margin-top:44px;border:1px solid #0e1f34;}
+    .fqr{display:grid;grid-template-columns:240px 1fr 40px;gap:20px;padding:24px 32px;background:#080f20;border-bottom:1px solid #0e1f34;align-items:start;transition:background .2s;}
+    .fqr:last-child{border-bottom:none;}.fqr:hover{background:#0c1830;}
+    .fqq{font-family:var(--serif);font-size:14px;color:#3a6080;font-style:italic;}
+    .fqa{font-family:var(--sans);font-size:13px;color:#5a80a8;line-height:1.6;}
+    .fqc{font-family:var(--mono);font-size:14px;color:var(--b-hi);text-align:right;padding-top:1px;}
 
-        /* Results */
-        .result-section { margin-top: 24px; }
+    /* DISCLOSURE */
+    .disc{background:#060e1c;border:1px solid #0e1f34;padding:36px;margin-top:56px;font-family:var(--mono);font-size:11px;color:#3a5878;line-height:1.85;letter-spacing:.02em;}
+    .disc strong{color:#5a80a8;font-weight:normal;}
 
-        .issue-item {
-            display: flex;
-            gap: 12px;
-            padding: 14px 16px;
-            background: var(--surface2);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            align-items: flex-start;
-        }
-        .issue-badge {
-            flex-shrink: 0;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        .badge-critical { background: rgba(224,85,85,0.15); color: var(--red); }
-        .badge-error { background: rgba(232,148,74,0.15); color: var(--orange); }
-        .badge-warning { background: rgba(240,192,64,0.15); color: var(--yellow); }
-        .badge-info { background: rgba(108,138,255,0.15); color: var(--accent); }
+    /* FADE */
+    .fi{opacity:1;transform:translateY(0);transition:opacity .65s ease,transform .65s ease;}
+    .fi.hidden{opacity:0;transform:translateY(18px);}
+    .fi.hidden.vis{opacity:1;transform:translateY(0);}
 
-        .issue-content { flex: 1; }
-        .issue-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-        .issue-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
-        .issue-fix {
-            display: flex; align-items: center; gap: 6px;
-            margin-top: 6px; font-size: 12px; color: var(--green);
-        }
+    /* ══ TOOL SECTION ══ */
+    #tool{background:var(--t-bg);padding:96px 0 0;border-bottom:1px solid #c4b8a8;}
+    .th{max-width:1160px;margin:0 auto;padding:0 56px 56px;}
+    .th .sec-num{color:#8aa870;}.th .sec-title{color:#2a2218;}
+    .th .prose{font-family:var(--sans);font-size:14px;color:#6a5e50;}
+    .ta{background:var(--t-bg);font-family:var(--sans);color:var(--t-txt);border-top:1px solid var(--t-bdr);}
+    .tc2{max-width:1100px;margin:0 auto;padding:40px 32px 56px;}
 
-        /* Stats grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-        }
-        .stat-card {
-            background: var(--surface2);
-            border-radius: 8px;
-            padding: 14px;
-            text-align: center;
-        }
-        .stat-value { font-size: 22px; font-weight: 700; color: var(--accent2); }
-        .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+    /* tool tabs */
+    .tt{display:flex;gap:4px;margin-bottom:28px;background:var(--t-sur);border-radius:var(--r);padding:4px;border:1px solid var(--t-bdr);}
+    .ttb{flex:1;padding:11px 14px;text-align:center;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;color:var(--t-dim);transition:all .2s;}
+    .ttb:hover{color:var(--t-txt);background:var(--t-sur2);}
+    .ttb.active{color:#fff;background:var(--t-acc);}
+    .tcon{display:none;}.tcon.active{display:block;}
 
-        /* Recommendation cards */
-        .rec-card {
-            display: flex;
-            gap: 16px;
-            padding: 16px;
-            background: var(--surface2);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 3px solid var(--accent);
-        }
-        .rec-rank {
-            flex-shrink: 0;
-            width: 32px; height: 32px;
-            background: var(--accent);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 14px;
-        }
-        .rec-format { font-weight: 700; font-size: 16px; color: var(--accent2); }
-        .rec-reason { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+    /* tool card */
+    .kd{background:var(--t-sur);border:1px solid var(--t-bdr);border-radius:var(--r);padding:22px;margin-bottom:18px;}
+    .kd h2{font-size:17px;margin-bottom:14px;color:var(--t-acc2);}
+    .kd h3{font-size:14px;margin-bottom:10px;color:var(--t-txt);}
 
-        /* Transfer issues */
-        .transfer-card {
-            background: var(--surface2);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 10px;
-        }
-        .transfer-card .what-breaks { color: var(--orange); font-weight: 600; font-size: 14px; }
-        .transfer-card .details { color: var(--text-dim); font-size: 13px; margin-top: 6px; line-height: 1.5; }
-        .transfer-card .solution {
-            margin-top: 8px; padding: 8px 12px;
-            background: rgba(76,175,133,0.1);
-            border-radius: 6px;
-            font-size: 13px; color: var(--green);
-        }
+    /* upload */
+    .uz{border:2px dashed var(--t-bdr);border-radius:var(--r);padding:44px 20px;text-align:center;cursor:pointer;transition:all .3s;margin-bottom:18px;}
+    .uz:hover,.uz.dg{border-color:var(--t-acc);background:rgba(108,138,255,.05);}
+    .uz .ico{font-size:44px;margin-bottom:10px;}
+    .uz p{color:var(--t-dim);font-size:14px;}
+    .uz .fmts{color:var(--t-dim);font-size:12px;margin-top:7px;opacity:.7;}
+    .uz input[type=file]{display:none;}
 
-        /* Format output selector */
-        .format-selector {
-            display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;
-        }
-        .format-btn {
-            padding: 8px 16px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--surface2);
-            color: var(--text);
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-        .format-btn:hover { border-color: var(--accent); }
-        .format-btn.selected { border-color: var(--accent); background: rgba(108,138,255,0.15); }
+    /* selects */
+    .sr{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:end;margin-bottom:18px;}
+    .sg label{display:block;font-size:12px;color:var(--t-dim);margin-bottom:5px;font-weight:500;}
+    .sg select{width:100%;padding:9px 12px;background:var(--t-sur2);border:1px solid var(--t-bdr);border-radius:8px;color:var(--t-txt);font-size:13px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a6e60' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+    .sg select:focus{outline:none;border-color:var(--t-acc);}
+    .ai2{color:var(--t-dim);text-align:center;font-size:22px;padding-bottom:7px;}
+    @media(max-width:600px){.sr{grid-template-columns:1fr;}.ai2{transform:rotate(90deg);}}
 
-        /* Loading */
-        .spinner {
-            display: inline-block;
-            width: 20px; height: 20px;
-            border: 2px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+    /* buttons */
+    .btn{padding:9px 22px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+    .bp{background:var(--t-acc);color:#fff;}.bp:hover{background:#1f5e3a;}
+    .bg2{background:var(--t-grn);color:#fff;}.bg2:hover{background:#1f5e3a;}
+    .btn:disabled{opacity:.4;cursor:not-allowed;}
+    .br{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
 
-        .loading-overlay {
-            display: none;
-            align-items: center;
-            gap: 10px;
-            padding: 16px;
-            background: var(--surface2);
-            border-radius: 8px;
-            margin: 16px 0;
-        }
-        .loading-overlay.show { display: flex; }
+    /* spinner */
+    .sp{display:inline-block;width:18px;height:18px;border:2px solid var(--t-bdr);border-top-color:var(--t-acc);border-radius:50%;animation:spin .6s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .lb{display:none;align-items:center;gap:10px;padding:14px;background:var(--t-sur2);border-radius:8px;margin:14px 0;}
+    .lb.show{display:flex;}
 
-        /* Knowledge base tab */
-        .kb-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 16px;
-        }
-        .kb-card {
-            background: var(--surface2);
-            border-radius: 8px;
-            padding: 16px;
-        }
-        .kb-card h4 { color: var(--accent2); margin-bottom: 8px; font-size: 14px; }
-        .kb-card p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
-        .kb-tag {
-            display: inline-block;
-            padding: 2px 8px;
-            background: rgba(108,138,255,0.1);
-            color: var(--accent);
-            border-radius: 4px;
-            font-size: 11px;
-            margin-top: 8px;
-        }
+    /* stats */
+    .sg2{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;}
+    .sc{background:var(--t-sur2);border-radius:8px;padding:12px;text-align:center;}
+    .sv{font-size:20px;font-weight:700;color:var(--t-acc2);}
+    .sl{font-size:11px;color:var(--t-dim);margin-top:3px;}
 
-        /* File info bar */
-        .file-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            background: var(--surface2);
-            border-radius: 8px;
-            margin-bottom: 16px;
-        }
-        .file-icon { font-size: 24px; }
-        .file-name { font-weight: 600; }
-        .file-meta { font-size: 12px; color: var(--text-dim); }
-        .file-remove {
-            margin-left: auto;
-            color: var(--text-dim);
-            cursor: pointer;
-            font-size: 18px;
-        }
-        .file-remove:hover { color: var(--red); }
+    /* issues */
+    .ii{display:flex;gap:10px;padding:12px 14px;background:var(--t-sur2);border-radius:8px;margin-bottom:7px;align-items:flex-start;}
+    .ib{flex-shrink:0;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
+    .bc{background:rgba(192,57,43,.12);color:var(--t-red);}
+    .be{background:rgba(176,88,32,.12);color:var(--t-org);}
+    .bw{background:rgba(154,106,0,.12);color:var(--t-yel);}
+    .bi{background:rgba(42,122,78,.12);color:var(--t-acc);}
+    .it{font-weight:600;font-size:13px;margin-bottom:3px;}
+    .id2{font-size:12px;color:var(--t-dim);line-height:1.5;}
+    .ifix{display:flex;align-items:center;gap:5px;margin-top:5px;font-size:11px;color:var(--t-grn);}
 
-        /* Fix results */
-        .fix-result {
-            background: rgba(76,175,133,0.1);
-            border: 1px solid rgba(76,175,133,0.3);
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 16px;
-        }
-        .fix-result h3 { color: var(--green); margin-bottom: 10px; }
-        .fix-item { padding: 4px 0; font-size: 13px; color: var(--text); }
-        .fix-item::before { content: "\2713 "; color: var(--green); font-weight: 700; }
+    /* recs */
+    .rc{display:flex;gap:14px;padding:14px;background:var(--t-sur2);border-radius:8px;margin-bottom:9px;border-left:3px solid var(--t-acc);}
+    .rr{flex-shrink:0;width:30px;height:30px;background:var(--t-acc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;}
+    .rf{font-weight:700;font-size:15px;color:var(--t-acc2);}
+    .rrs{font-size:12px;color:var(--t-dim);margin-top:3px;}
+    .trc{background:var(--t-sur2);border-radius:8px;padding:14px;margin-bottom:9px;}
+    .wb{color:var(--t-org);font-weight:600;font-size:13px;}
+    .det{color:var(--t-dim);font-size:12px;margin-top:5px;line-height:1.5;}
+    .sol{margin-top:7px;padding:7px 10px;background:rgba(76,175,133,.1);border-radius:6px;font-size:12px;color:var(--t-grn);}
 
-        /* Responsive */
-        @media (max-width: 600px) {
-            .select-row { grid-template-columns: 1fr; }
-            .arrow-icon { transform: rotate(90deg); }
-        }
-    </style>
+    /* format selector */
+    .fs{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+    .fb{padding:7px 14px;border:1px solid var(--t-bdr);border-radius:8px;background:var(--t-sur2);color:var(--t-txt);cursor:pointer;font-size:12px;transition:all .2s;}
+    .fb:hover{border-color:var(--t-acc);}
+    .fb.sel{border-color:var(--t-acc);background:rgba(108,138,255,.15);}
+
+    /* fix result */
+    .fxr{background:rgba(76,175,133,.1);border:1px solid rgba(76,175,133,.3);border-radius:8px;padding:14px;margin-top:14px;}
+    .fxr h3{color:var(--t-grn);margin-bottom:8px;font-size:15px;}
+    .fxi{padding:3px 0;font-size:12px;color:var(--t-txt);}
+    .fxi::before{content:"✓ ";color:var(--t-grn);font-weight:700;}
+
+    /* file info */
+    .fi2{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--t-sur2);border-radius:8px;margin-bottom:14px;}
+    .fnm{font-weight:600;font-size:14px;}
+    .fme{font-size:11px;color:var(--t-dim);}
+    .frm{margin-left:auto;color:var(--t-dim);cursor:pointer;font-size:18px;}
+    .frm:hover{color:var(--t-red);}
+
+    /* ai card */
+    .ac{background:linear-gradient(135deg,rgba(42,122,78,.07),rgba(30,102,64,.04));border:1px solid rgba(42,122,78,.25);border-radius:var(--r);padding:18px 22px;margin-bottom:18px;}
+    .ah{display:flex;align-items:center;gap:9px;margin-bottom:10px;}
+    .ab{display:inline-flex;align-items:center;gap:5px;background:rgba(42,122,78,.15);color:var(--t-acc);border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;letter-spacing:.05em;}
+    .at{font-size:13px;line-height:1.75;color:var(--t-txt);white-space:pre-wrap;}
+    .ae{color:var(--t-red);font-size:12px;}
+
+    /* kb */
+    .kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
+    .kbc{background:var(--t-sur2);border-radius:8px;padding:14px;}
+    .kbc h4{color:var(--t-acc2);margin-bottom:7px;font-size:13px;}
+    .kbc p{font-size:12px;color:var(--t-dim);line-height:1.5;}
+    .kt{display:inline-block;padding:2px 7px;background:rgba(42,122,78,.12);color:var(--t-acc);border-radius:4px;font-size:10px;margin-top:7px;}
+
+    /* chat */
+    .cw{display:flex;flex-direction:column;height:520px;background:var(--t-sur);border:1px solid var(--t-bdr);border-radius:var(--r);overflow:hidden;}
+    .cm{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:10px;}
+    .msg{max-width:82%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;white-space:pre-wrap;}
+    .msg.user{align-self:flex-end;background:var(--t-acc);color:#fff;border-bottom-right-radius:4px;}
+    .msg.assistant{align-self:flex-start;background:var(--t-sur2);color:var(--t-txt);border-bottom-left-radius:4px;}
+    .msg.sys{align-self:center;background:transparent;color:var(--t-dim);font-size:12px;font-style:italic;max-width:100%;text-align:center;}
+    .cir{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--t-bdr);background:var(--t-sur2);}
+    .cir textarea{flex:1;background:var(--t-sur);border:1px solid var(--t-bdr);border-radius:8px;color:var(--t-txt);font-size:13px;padding:9px 12px;resize:none;font-family:var(--sans);line-height:1.5;max-height:110px;}
+    .cir textarea:focus{outline:none;border-color:var(--t-acc);}
+    .cty{align-self:flex-start;color:var(--t-dim);font-size:12px;padding:3px 18px;display:none;}
+    .cty.show{display:block;}
+
+    /* FOOTER */
+    footer{background:#04070f;padding:52px 56px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;}
+    .ftb{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:#2a4a6a;text-transform:uppercase;}
+    .ftr{font-family:var(--mono);font-size:10px;color:#1e3850;letter-spacing:.1em;text-align:right;line-height:1.8;}
+
+    @media(max-width:700px){
+      .hero,.bs{padding-left:20px;padding-right:20px;}
+      .scroll-hint{left:20px;}
+      footer{padding:40px 20px;}
+      .th{padding:0 20px 40px;}
+      .tc2{padding:32px 16px 48px;}
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h1>3D Model Transfer Assistant</h1>
-        <p>Upload your model, pick source & target apps — get analysis, fixes, and transfer recommendations</p>
+
+<nav>
+  <a class="nav-brand" href="#">CJ Snyder · AI 180 · P3</a>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#pipeline">Pipeline</a></li>
+    <li><a href="#tool">Tool</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#resistance">Resistance</a></li>
+    <li><a href="#reflect">Reflect</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-lbl">Process Book &nbsp;·&nbsp; 3D Model Lifecycle Pipeline</div>
+  <h1 class="hero-title">The Transfer<br><em>Problem</em></h1>
+  <p class="hero-sub">A tool for moving 3D models between applications without breaking them — and a map of the system that creates the problem in the first place.</p>
+  <div class="hero-meta">
+    <div><span style="color:#444">Author&nbsp;&nbsp;</span><strong>CJ Snyder</strong></div>
+    <div><span style="color:#444">Course&nbsp;&nbsp;</span><strong>AI 180</strong></div>
+    <div><span style="color:#444">Project&nbsp;&nbsp;</span><strong>P3</strong></div>
+    <div><span style="color:#444">Year&nbsp;&nbsp;</span><strong>2026</strong></div>
+  </div>
+  <a class="hero-cta" href="#tool">Use the Tool &nbsp;↓</a>
+  <div class="scroll-hint">Scroll to read</div>
+</div>
+
+<!-- §01 PROBLEM -->
+<section id="problem" class="bs bg-a fi">
+  <div class="si">
+    <div class="sec-hd"><span class="sec-num">01</span><h2 class="sec-title">The Problem</h2></div>
+    <div class="prose">
+      <p>I work in 3D modeling for game development. The pipeline moves through multiple applications — modeling in <strong>3ds Max</strong> or <strong>ZBrush</strong>, then bringing the result into a game engine like <strong>Unity</strong> or <strong>Unreal</strong>. Every time a model crosses that boundary, something can break.</p>
+      <p>Axes interpret differently. Scale is off. Faces invert. Normals flip. What looked clean in the source application arrives broken in the destination.</p>
     </div>
-
-    <div class="container">
-        <!-- Tabs -->
-        <div class="tabs">
-            <div class="tab active" data-tab="analyze">Upload & Analyze</div>
-            <div class="tab" data-tab="recommend">Format Advisor</div>
-            <div class="tab" data-tab="knowledge">Knowledge Base</div>
-        </div>
-
-        <!-- TAB 1: Upload & Analyze -->
-        <div class="tab-content active" id="tab-analyze">
-            <div class="card">
-                <h2>Upload Your 3D Model</h2>
-                <div class="upload-zone" id="uploadZone">
-                    <div class="icon">&#128230;</div>
-                    <p>Drag & drop your model file here, or click to browse</p>
-                    <p class="formats">Supported: STL, OBJ, FBX, GLB, GLTF, PLY, DAE, 3DS</p>
-                    <input type="file" id="fileInput" accept=".stl,.obj,.fbx,.glb,.gltf,.ply,.dae,.3ds">
-                </div>
-                <div id="fileInfo" style="display:none"></div>
-
-                <div class="select-row">
-                    <div class="select-group">
-                        <label>Source Application</label>
-                        <select id="sourceApp"><option value="">Select source app...</option></select>
-                    </div>
-                    <div class="arrow-icon">&#10132;</div>
-                    <div class="select-group">
-                        <label>Target Application</label>
-                        <select id="targetApp"><option value="">Select target app...</option></select>
-                    </div>
-                </div>
-
-                <div class="btn-row">
-                    <button class="btn btn-primary" id="analyzeBtn" disabled>Analyze Model</button>
-                </div>
-            </div>
-
-            <div class="loading-overlay" id="analyzeLoading">
-                <div class="spinner"></div>
-                <span>Analyzing your model...</span>
-            </div>
-
-            <!-- Analysis Results -->
-            <div id="analysisResults" style="display:none">
-                <div class="card">
-                    <h2>Model Statistics</h2>
-                    <div class="stats-grid" id="statsGrid"></div>
-                </div>
-
-                <div class="card" id="issuesCard">
-                    <h2>Issues Found <span id="issueCount" style="font-size:14px; color:var(--text-dim)"></span></h2>
-                    <div id="issuesList"></div>
-                </div>
-
-                <div class="card" id="transferCard" style="display:none">
-                    <h2>Transfer Recommendations</h2>
-                    <div id="transferRecs"></div>
-                    <div id="transferIssues" style="margin-top:16px"></div>
-                </div>
-
-                <div class="card" id="fixCard" style="display:none">
-                    <h2>Auto-Fix</h2>
-                    <p style="color:var(--text-dim); font-size:14px; margin-bottom:12px;">
-                        Select an output format, then click Fix to repair and export your model.
-                    </p>
-                    <h3>Export Format</h3>
-                    <div class="format-selector" id="formatSelector">
-                        <div class="format-btn selected" data-fmt="stl">STL</div>
-                        <div class="format-btn" data-fmt="obj">OBJ</div>
-                        <div class="format-btn" data-fmt="glb">GLB</div>
-                        <div class="format-btn" data-fmt="ply">PLY</div>
-                    </div>
-                    <div class="btn-row">
-                        <button class="btn btn-green" id="fixBtn">Fix & Export</button>
-                    </div>
-                    <div class="loading-overlay" id="fixLoading">
-                        <div class="spinner"></div>
-                        <span>Repairing model...</span>
-                    </div>
-                    <div id="fixResults"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 2: Format Advisor -->
-        <div class="tab-content" id="tab-recommend">
-            <div class="card">
-                <h2>Format Recommendation</h2>
-                <p style="color:var(--text-dim); font-size:14px; margin-bottom:16px;">
-                    Select where your model is coming from and where it's going — no upload needed.
-                </p>
-                <div class="select-row">
-                    <div class="select-group">
-                        <label>Source Application</label>
-                        <select id="recSource"><option value="">Select source...</option></select>
-                    </div>
-                    <div class="arrow-icon">&#10132;</div>
-                    <div class="select-group">
-                        <label>Target Application</label>
-                        <select id="recTarget"><option value="">Select target...</option></select>
-                    </div>
-                </div>
-                <div class="btn-row">
-                    <button class="btn btn-primary" id="recommendBtn">Get Recommendations</button>
-                    <span id="recLoading" style="display:none; align-items:center; gap:8px;">
-                        <div class="spinner"></div><span style="color:var(--text-dim); font-size:14px;">Looking up recommendations...</span>
-                    </span>
-                </div>
-                <div id="recError" style="display:none; color:var(--red); font-size:13px; margin-top:10px;"></div>
-            </div>
-            <div id="recResults" style="display:none">
-                <div class="card">
-                    <h2>Recommended Formats</h2>
-                    <div id="recFormats"></div>
-                </div>
-                <div class="card" id="recIssuesCard" style="display:none">
-                    <h2>Known Transfer Issues</h2>
-                    <div id="recIssues"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 3: Knowledge Base -->
-        <div class="tab-content" id="tab-knowledge">
-            <div class="card">
-                <h2>Format Comparison</h2>
-                <div class="kb-grid" id="formatGrid"></div>
-            </div>
-            <div class="card">
-                <h2>Common Causes of Broken Transfers</h2>
-                <div class="kb-grid" id="causesGrid"></div>
-            </div>
-            <div class="card">
-                <h2>Recommended Tools</h2>
-                <div class="kb-grid" id="toolsGrid"></div>
-            </div>
-        </div>
+    <div class="pq">"My default workflow was to wait for the problem and then look it up. That worked until it didn't."</div>
+    <div class="prose">
+      <p>When deadline pressure was high, debugging a broken import could eat hours. The knowledge existed — I just had no way to apply it automatically, at the moment of transfer, to a specific file.</p>
+      <p>P3 was about building that tool: a program that detects transfer issues, explains them in plain language, applies targeted fixes, and is deployed somewhere accessible — no local Python setup required.</p>
     </div>
+  </div>
+</section>
+
+<!-- §02 PIPELINE -->
+<section id="pipeline" class="bs bg-b fi">
+  <div class="si">
+    <div class="sec-hd"><span class="sec-num">02</span><h2 class="sec-title">The Pipeline</h2></div>
+    <div class="prose"><p>The 3D model lifecycle runs through at least four distinct environments before an asset reaches a shipped game. Each handoff is a potential failure point.</p></div>
+    <div class="pipeline">
+      <div class="pr"><div class="pr-app">3ds Max / ZBrush</div><div class="pr-desc">Primary authoring. Model created in the application's native coordinate system, scale, and mesh topology.</div><div class="pr-tag">Source</div></div>
+      <div class="pa">↓ &nbsp; EXPORT — format choice, scale, axis orientation</div>
+      <div class="pr" style="background:#0c1830;border-color:#1a3a60;">
+        <div class="pr-app" style="color:var(--b-hi)">3D Model Transfer Tool</div>
+        <div class="pr-desc">Analysis, auto-fix, and format conversion. Detects axis mismatches, scale errors, inverted normals, non-manifold geometry, and disconnected debris.</div>
+        <div class="pr-tag" style="color:var(--b-hi)">Leverage Point</div>
+      </div>
+      <div class="pa">↓ &nbsp; IMPORT — cleaned file, correct format</div>
+      <div class="pr"><div class="pr-app">Unity / Unreal Engine</div><div class="pr-desc">Destination environment. The model is rigged, lit, and integrated into the game world. Errors here are expensive to trace back.</div><div class="pr-tag">Target</div></div>
+    </div>
+    <div class="prose" style="margin-top:40px;"><p>The transfer tool is not one factor among several — it is <strong>the hinge</strong>. Everything on the source side collapses to a single moment when the file crosses into the destination environment. That moment is where the tool operates.</p></div>
+    <div style="margin-top:44px;">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#2e5070;margin-bottom:14px;">Interactive Lifecycle Map</div>
+      <iframe src="/pipeline" style="width:100%;height:780px;border:1px solid #0e1f34;border-radius:8px;display:block;" loading="lazy" title="3D Model Lifecycle Pipeline"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- §03 TOOL -->
+<section id="tool">
+  <div class="th">
+    <div class="sec-hd"><span class="sec-num" style="color:#8aa870">03</span><h2 class="sec-title" style="color:#2a2218">The Tool</h2></div>
+    <div class="prose" style="font-family:var(--sans);font-size:14px;color:#6a5e50;">Upload a 3D model, select source and target applications, and get a full analysis report, AI-powered explanation, targeted auto-fixes, and a downloadable repaired file.</div>
+  </div>
+  <div class="ta">
+    <div class="tc2">
+      <div class="tt">
+        <div class="ttb active" data-tab="analyze">Upload &amp; Analyze</div>
+        <div class="ttb" data-tab="recommend">Format Advisor</div>
+        <div class="ttb" data-tab="knowledge">Knowledge Base</div>
+        <div class="ttb" data-tab="chat">🤖 Ask Claude</div>
+      </div>
+
+      <!-- TAB: Analyze -->
+      <div class="tcon active" id="tab-analyze">
+        <div class="kd">
+          <h2>Upload Your 3D Model</h2>
+          <div class="uz" id="uploadZone">
+            <div class="ico">📦</div>
+            <p>Drag &amp; drop your model file here, or click to browse</p>
+            <p class="fmts">STL · OBJ · FBX · GLB · GLTF · PLY · DAE · 3DS &nbsp;(max 4 MB on hosted version)</p>
+            <input type="file" id="fileInput" accept=".stl,.obj,.fbx,.glb,.gltf,.ply,.dae,.3ds">
+          </div>
+          <div id="fileInfo" style="display:none"></div>
+          <div class="sr">
+            <div class="sg"><label>Source Application</label><select id="sourceApp"><option value="">Select source…</option></select></div>
+            <div class="ai2">→</div>
+            <div class="sg"><label>Target Application</label><select id="targetApp"><option value="">Select target…</option></select></div>
+          </div>
+          <div class="br"><button class="btn bp" id="analyzeBtn" disabled>Analyze Model</button></div>
+        </div>
+        <div class="lb" id="analyzeLoading"><div class="sp"></div><span>Analyzing…</span></div>
+        <div id="analysisResults" style="display:none">
+          <div class="kd"><h2>Model Statistics</h2><div class="sg2" id="statsGrid"></div></div>
+          <div class="kd"><h2>Issues Found <span id="issueCount" style="font-size:13px;color:var(--t-dim)"></span></h2><div id="issuesList"></div></div>
+          <div class="kd" id="transferCard" style="display:none"><h2>Transfer Recommendations</h2><div id="transferRecs"></div><div id="transferIssues" style="margin-top:14px"></div></div>
+          <div class="kd" id="fixCard" style="display:none">
+            <h2>Auto-Fix</h2>
+            <p style="color:var(--t-dim);font-size:13px;margin-bottom:10px;">Select an output format, then click Fix to repair and export.</p>
+            <h3>Export Format</h3>
+            <div class="fs" id="formatSelector">
+              <div class="fb sel" data-fmt="stl">STL</div>
+              <div class="fb" data-fmt="obj">OBJ</div>
+              <div class="fb" data-fmt="glb">GLB</div>
+              <div class="fb" data-fmt="ply">PLY</div>
+            </div>
+            <div class="br"><button class="btn bg2" id="fixBtn">Fix &amp; Export</button></div>
+            <div class="lb" id="fixLoading"><div class="sp"></div><span>Repairing…</span></div>
+            <div id="fixResults"></div>
+          </div>
+          <div class="ac" id="aiSummaryCard" style="display:none">
+            <div class="ah"><span class="ab">🤖 Claude AI</span><span style="font-size:13px;font-weight:600;color:var(--t-acc2)">Analysis Summary</span><span id="aiSummaryLoading" style="display:none;margin-left:auto"><div class="sp"></div></span></div>
+            <div id="aiSummaryText" class="at"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Format Advisor -->
+      <div class="tcon" id="tab-recommend">
+        <div class="kd">
+          <h2>Format Recommendation</h2>
+          <p style="color:var(--t-dim);font-size:13px;margin-bottom:14px;">Select source and target apps — no upload needed.</p>
+          <div class="sr">
+            <div class="sg"><label>Source Application</label><select id="recSource"><option value="">Select source…</option></select></div>
+            <div class="ai2">→</div>
+            <div class="sg"><label>Target Application</label><select id="recTarget"><option value="">Select target…</option></select></div>
+          </div>
+          <div class="br">
+            <button class="btn bp" id="recommendBtn">Get Recommendations</button>
+            <span id="recLoading" style="display:none;align-items:center;gap:8px"><div class="sp"></div><span style="color:var(--t-dim);font-size:13px">Looking up…</span></span>
+          </div>
+          <div id="recError" style="display:none;color:var(--t-red);font-size:12px;margin-top:8px"></div>
+        </div>
+        <div id="recResults" style="display:none">
+          <div class="kd"><h2>Recommended Formats</h2><div id="recFormats"></div></div>
+          <div class="kd" id="recIssuesCard" style="display:none"><h2>Known Transfer Issues</h2><div id="recIssues"></div></div>
+          <div class="ac" id="aiFormatCard" style="display:none">
+            <div class="ah"><span class="ab">🤖 Claude AI</span><span style="font-size:13px;font-weight:600;color:var(--t-acc2)">AI Format Advice</span><span id="aiFormatLoading" style="display:none;margin-left:auto"><div class="sp"></div></span></div>
+            <div id="aiFormatText" class="at"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Knowledge Base -->
+      <div class="tcon" id="tab-knowledge">
+        <div class="kd"><h2>Format Comparison</h2><div class="kg" id="formatGrid"></div></div>
+        <div class="kd"><h2>Common Causes of Broken Transfers</h2><div class="kg" id="causesGrid"></div></div>
+        <div class="kd"><h2>Recommended Tools</h2><div class="kg" id="toolsGrid"></div></div>
+      </div>
+
+      <!-- TAB: Chat -->
+      <div class="tcon" id="tab-chat">
+        <div class="cw">
+          <div class="cm" id="chatMessages">
+            <div class="msg sys">Ask me anything about 3D model transfer, formats, mesh issues, or workflows. If you've uploaded a model this session, I'll have that context too.</div>
+          </div>
+          <div class="cty" id="chatTyping">Claude is thinking…</div>
+          <div class="cir">
+            <textarea id="chatInput" rows="2" placeholder="e.g. Why does my mesh look inside-out in Unity?"></textarea>
+            <button class="btn bp" id="chatSendBtn" style="align-self:flex-end">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- §04 PROCESS -->
+<section id="process" class="bs bg-lite fi">
+  <div class="si">
+    <div class="sec-hd"><span class="sec-num">04</span><h2 class="sec-title">The Process</h2></div>
+    <div class="prose"><p>P3 was developed using the Epistemic Stewardship Framework — a five-phase process that keeps thinking on the human side by requiring a position before AI enters the work.</p></div>
+    <div class="pgrid">
+      <div class="pc"><div class="pn">Phase 01</div><div class="pm">Inquire</div><div class="pd">Defined the problem from direct experience. Identified the pipeline, the failure points, and what P2 couldn't do yet. No AI.</div></div>
+      <div class="pc"><div class="pn">Phase 02</div><div class="pm">Position</div><div class="pd">Written before any AI engagement: the use case, what couldn't be compromised, and where the line was. The anchor for every decision that followed.</div></div>
+      <div class="pc"><div class="pn">Phase 03</div><div class="pm">Explore</div><div class="pd">Systems map, leverage point identification, deployment platform. Where AI challenged the position — and where the position held.</div></div>
+      <div class="pc"><div class="pn">Phase 04</div><div class="pm">Make</div><div class="pd">Built the application: AI integration, security hardening, Vercel deployment, environment-aware config. Every change reviewed before applied.</div></div>
+      <div class="pc"><div class="pn">Phase 05</div><div class="pm">Reflect</div><div class="pd">Documented what was kept, revised, and rejected. Assessed where the position held and where it was tested hardest.</div></div>
+    </div>
+    <div class="pq">"The tool still requires deliberate action from the user for everything consequential. It analyzes, suggests, and flags — but it does not modify a file without a click."</div>
+  </div>
+</section>
+
+<!-- §05 RESISTANCE -->
+<section id="resistance" class="bs bg-lite fi">
+  <div class="si">
+    <div class="sec-hd"><span class="sec-num">05</span><h2 class="sec-title">Records of Resistance</h2></div>
+    <div class="prose"><p>Three documented moments where I rejected or substantially revised AI output. These records make the creative judgment visible — not what the AI produced, but what I decided not to use and why.</p></div>
+    <div class="rl">
+      <div class="ri"><div class="rn">RoR<br>02</div><div><div class="rw">AI suggested → Abandon the approach</div><div class="rt">The git lock file was "a fundamental incompatibility."</div><div class="rb">Claude concluded a persistent lock file on the OneDrive filesystem was unsolvable from the sandbox and told me to run git commands from my own terminal. I rejected the surrender and directed it to find a workaround. It solved the problem by cloning to a location outside the locked filesystem.</div></div></div>
+      <div class="ri"><div class="rn">RoR<br>03</div><div><div class="rw">AI suggested → Switch platforms</div><div class="rt">Vercel was the wrong platform for this app.</div><div class="rb">When I asked how to deploy on Vercel, Claude assessed the architecture and recommended Railway or Render instead. Accepting the redirect would have let AI determine the scope of my project based on convenience. I held the platform choice. Claude adapted the app to Vercel's constraints — and those constraints became good design pressure.</div></div></div>
+      <div class="ri"><div class="rn">RoR<br>04</div><div><div class="rw">AI suggested → Three equal leverage points</div><div class="rt">The systems map flattened what I knew.</div><div class="rb">Claude presented export settings, the transfer tool, and engine import settings as a balanced set. That framing was technically accurate but experientially wrong. The transfer tool is the central leverage point, not one of three equal variables. I corrected the framing. The map now reflects the relationship, not the list.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- §06 REFLECT -->
+<section id="reflect" class="bs bg-e fi">
+  <div class="si">
+    <div class="sec-hd"><span class="sec-num">06</span><h2 class="sec-title">Reflect</h2></div>
+    <div class="tc">
+      <div class="prose"><p><strong>What I learned by directing the build</strong></p><p>I would not have built a deployable Flask application without AI. What I learned in the process was specific: how serverless environments change what code has to know about itself, what a path traversal vulnerability actually looks like, how Python 3 handles exception variable scope in a way that breaks closures.</p><p>I learned those things not by writing the code, but by holding responsibility for every change — reading the diffs, tracking down the failures, making every call.</p></div>
+      <div class="prose"><p><strong>What I would do differently</strong></p><p>I would build the systems map earlier. I made it toward the end of P3, but it was the artifact that clarified the problem better than anything else. Starting from the systems view would have given me cleaner decisions throughout.</p><p>The hardest thing to hold was staying focused on the actual behavior — does the right thing happen at the URL — rather than treating each new error as progress.</p></div>
+    </div>
+    <div class="fqt" style="margin-top:56px">
+      <div style="background:#0c1810;padding:14px 32px;border-bottom:1px solid #112213;display:grid;grid-template-columns:240px 1fr 40px;gap:20px"><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#444;text-transform:uppercase">The Five Questions</div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#444;text-transform:uppercase">Response</div><div></div></div>
+      <div class="fqr"><div class="fqq">Can I defend this?</div><div class="fqa">Yes. The tool solves a problem I have and will continue to have. Every decision traces back to that use case.</div><div class="fqc">✓</div></div>
+      <div class="fqr"><div class="fqq">Is this mine?</div><div class="fqa">Yes. I identified the problem, defined the pipeline, directed the build, and tested with real 3D model files.</div><div class="fqc">✓</div></div>
+      <div class="fqr"><div class="fqq">Did I verify?</div><div class="fqa">Yes. I ran actual files through the tool and reviewed every code change before it was applied.</div><div class="fqc">✓</div></div>
+      <div class="fqr"><div class="fqq">Would I teach this?</div><div class="fqa">Yes. I can walk someone through the pipeline and use the tool to demonstrate the transfer problems it solves.</div><div class="fqc">✓</div></div>
+      <div class="fqr"><div class="fqq">Is my disclosure honest?</div><div class="fqa">Yes. The AI use log accurately reflects how Claude was used — as builder and documentarian under my direction.</div><div class="fqc">✓</div></div>
+    </div>
+    <div class="disc"><strong>AI COLLABORATION DISCLOSURE —</strong> This project was developed using the ESF five-phase process. Claude (Sonnet 4.6, Anthropic) was used as builder and documentarian throughout P3, working under my direction. Claude wrote the application code, visualization, and ESF documentation based on my specifications. I directed the feature set, defined the use case, tested with real 3D model files, reviewed every code change, and made all consequential decisions. <strong>Records of Resistance:</strong> 3 documented. Position Statement on file. The author takes full responsibility for the accuracy and integrity of this work.</div>
+  </div>
+</section>
+
+<footer>
+  <div class="ftb">3D Model Lifecycle Pipeline · CJ Snyder · AI 180 · P3 · 2026</div>
+  <div class="ftr">Epistemic Stewardship Framework<br>Developed with Claude (Sonnet 4.6)</div>
+</footer>
 
 <script>
-// --- State ---
-let uploadedFile = null;
-let analysisReport = null;
-let selectedFormat = 'stl';
+let uploadedFile=null,analysisReport=null,selectedFormat='stl',chatHistory=[];
 
-// --- Init ---
-document.addEventListener('DOMContentLoaded', async () => {
-    const apps = await fetch('/api/apps').then(r => r.json());
-    populateSelects(apps);
-    loadKnowledgeBase();
+document.addEventListener('DOMContentLoaded',async()=>{
+  try{const a=await fetch('/api/apps').then(r=>r.json());populateSelects(a);}catch(e){console.warn('apps:',e);}
+  loadKB();
 });
 
-// --- Tabs ---
-document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
-    });
+// tool tabs
+document.querySelectorAll('.ttb').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.ttb').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tcon').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+  });
 });
 
-// --- Populate app selects ---
-function populateSelects(apps) {
-    const grouped = {};
-    for (const [app, cat] of Object.entries(apps)) {
-        if (!grouped[cat]) grouped[cat] = [];
-        grouped[cat].push(app);
+function populateSelects(apps){
+  const g={};
+  for(const[a,c] of Object.entries(apps)){if(!g[c])g[c]=[];g[c].push(a);}
+  ['sourceApp','targetApp','recSource','recTarget'].forEach(id=>{
+    const sel=document.getElementById(id);
+    for(const[cat,list] of Object.entries(g).sort()){
+      const og=document.createElement('optgroup');og.label=cat;
+      list.sort().forEach(ap=>{const o=document.createElement('option');o.value=ap;o.textContent=ap;og.appendChild(o);});
+      sel.appendChild(og);
     }
-    const selects = ['sourceApp', 'targetApp', 'recSource', 'recTarget'];
-    selects.forEach(id => {
-        const sel = document.getElementById(id);
-        for (const [cat, appList] of Object.entries(grouped).sort()) {
-            const group = document.createElement('optgroup');
-            group.label = cat;
-            appList.sort().forEach(app => {
-                const opt = document.createElement('option');
-                opt.value = app;
-                opt.textContent = app;
-                group.appendChild(opt);
-            });
-            sel.appendChild(group);
-        }
-    });
+  });
 }
 
-// --- File Upload ---
-const uploadZone = document.getElementById('uploadZone');
-const fileInput = document.getElementById('fileInput');
+const uz=document.getElementById('uploadZone'),fi=document.getElementById('fileInput');
+uz.addEventListener('click',()=>fi.click());
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('dg');});
+uz.addEventListener('dragleave',()=>uz.classList.remove('dg'));
+uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('dg');if(e.dataTransfer.files.length)hFile(e.dataTransfer.files[0]);});
+fi.addEventListener('change',()=>{if(fi.files.length)hFile(fi.files[0]);});
 
-uploadZone.addEventListener('click', () => fileInput.click());
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
-uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
-uploadZone.addEventListener('drop', e => {
-    e.preventDefault();
-    uploadZone.classList.remove('dragover');
-    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-});
-fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
-
-function handleFile(file) {
-    uploadedFile = file;
-    const ext = file.name.split('.').pop().toLowerCase();
-    document.getElementById('fileInfo').style.display = 'block';
-    document.getElementById('fileInfo').innerHTML = `
-        <div class="file-info">
-            <span class="file-icon">&#128196;</span>
-            <div>
-                <div class="file-name">${file.name}</div>
-                <div class="file-meta">${(file.size / 1024 / 1024).toFixed(2)} MB &bull; .${ext}</div>
-            </div>
-            <span class="file-remove" onclick="removeFile()">&times;</span>
-        </div>`;
-    uploadZone.style.display = 'none';
-    document.getElementById('analyzeBtn').disabled = false;
-    document.getElementById('analysisResults').style.display = 'none';
+function hFile(f){
+  uploadedFile=f;
+  const ext=f.name.split('.').pop().toLowerCase();
+  document.getElementById('fileInfo').style.display='block';
+  document.getElementById('fileInfo').innerHTML=`<div class="fi2"><span style="font-size:22px">📄</span><div><div class="fnm">${f.name}</div><div class="fme">${(f.size/1024/1024).toFixed(2)} MB · .${ext}</div></div><span class="frm" onclick="rmFile()">×</span></div>`;
+  uz.style.display='none';
+  document.getElementById('analyzeBtn').disabled=false;
+  document.getElementById('analysisResults').style.display='none';
+  document.getElementById('aiSummaryCard').style.display='none';
+}
+function rmFile(){
+  uploadedFile=null;analysisReport=null;fi.value='';
+  document.getElementById('fileInfo').style.display='none';
+  uz.style.display='block';
+  document.getElementById('analyzeBtn').disabled=true;
+  document.getElementById('analysisResults').style.display='none';
+  document.getElementById('aiSummaryCard').style.display='none';
 }
 
-function removeFile() {
-    uploadedFile = null;
-    analysisReport = null;
-    fileInput.value = '';
-    document.getElementById('fileInfo').style.display = 'none';
-    uploadZone.style.display = 'block';
-    document.getElementById('analyzeBtn').disabled = true;
-    document.getElementById('analysisResults').style.display = 'none';
-}
-
-// --- Analyze ---
-document.getElementById('analyzeBtn').addEventListener('click', async () => {
-    if (!uploadedFile) return;
-    const loading = document.getElementById('analyzeLoading');
-    loading.classList.add('show');
-    document.getElementById('analysisResults').style.display = 'none';
-
-    const formData = new FormData();
-    formData.append('model', uploadedFile);
-
-    try {
-        const res = await fetch('/api/analyze', { method: 'POST', body: formData });
-        analysisReport = await res.json();
-        renderAnalysis(analysisReport);
-
-        const source = document.getElementById('sourceApp').value;
-        const target = document.getElementById('targetApp').value;
-        if (source && target) {
-            const recRes = await fetch('/api/recommend', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ source, target })
-            });
-            const recData = await recRes.json();
-            renderTransferRecs(recData);
-        }
-    } catch (err) {
-        alert('Analysis failed: ' + err.message);
-    }
-    loading.classList.remove('show');
+document.getElementById('analyzeBtn').addEventListener('click',async()=>{
+  if(!uploadedFile)return;
+  document.getElementById('analyzeLoading').classList.add('show');
+  document.getElementById('analysisResults').style.display='none';
+  const fd=new FormData();fd.append('model',uploadedFile);
+  try{
+    const res=await fetch('/api/analyze',{method:'POST',body:fd});
+    analysisReport=await res.json();
+    renderAnalysis(analysisReport);
+    const src=document.getElementById('sourceApp').value,tgt=document.getElementById('targetApp').value;
+    if(src&&tgt){const rr=await fetch('/api/recommend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source:src,target:tgt})});renderTransferRecs(await rr.json());}
+    fetchAISummary(analysisReport,src,tgt);
+  }catch(e){alert('Analysis failed: '+e.message);}
+  document.getElementById('analyzeLoading').classList.remove('show');
 });
 
-function renderAnalysis(report) {
-    document.getElementById('analysisResults').style.display = 'block';
-
-    // Stats
-    const s = report.stats;
-    const grid = document.getElementById('statsGrid');
-    grid.innerHTML = '';
-    const stats = [
-        { label: 'Vertices', value: (s.vertices || 0).toLocaleString() },
-        { label: 'Faces', value: (s.faces || 0).toLocaleString() },
-        { label: 'Objects', value: s.object_count || 1 },
-        { label: 'Watertight', value: s.is_watertight ? 'Yes' : 'No' },
-    ];
-    if (s.dimensions_mm) {
-        stats.push({ label: 'Size (X)', value: s.dimensions_mm.x + ' units' });
-        stats.push({ label: 'Size (Y)', value: s.dimensions_mm.y + ' units' });
-        stats.push({ label: 'Size (Z)', value: s.dimensions_mm.z + ' units' });
-    }
-    stats.forEach(st => {
-        grid.innerHTML += `<div class="stat-card"><div class="stat-value">${st.value}</div><div class="stat-label">${st.label}</div></div>`;
-    });
-
-    // Issues
-    const list = document.getElementById('issuesList');
-    list.innerHTML = '';
-    const issues = report.issues || [];
-    document.getElementById('issueCount').textContent = issues.length > 0 ? `(${issues.length})` : '(none)';
-
-    if (issues.length === 0) {
-        list.innerHTML = '<div class="issue-item"><div class="issue-content"><div class="issue-title" style="color:var(--green)">No issues detected</div><div class="issue-desc">This model looks clean for transfer.</div></div></div>';
-    }
-
-    issues.forEach(iss => {
-        const badgeClass = iss.severity === 'critical' ? 'badge-critical' : iss.severity === 'error' ? 'badge-error' : iss.severity === 'warning' ? 'badge-warning' : 'badge-info';
-        list.innerHTML += `
-            <div class="issue-item">
-                <span class="issue-badge ${badgeClass}">${iss.severity}</span>
-                <div class="issue-content">
-                    <div class="issue-title">${iss.title}</div>
-                    <div class="issue-desc">${iss.description}</div>
-                    ${iss.auto_fixable ? '<div class="issue-fix">&#9881; Auto-fixable</div>' : ''}
-                </div>
-            </div>`;
-    });
-
-    // Show fix card if there are fixable issues
-    const fixCard = document.getElementById('fixCard');
-    if (report.fixable && report.fixable.length > 0) {
-        fixCard.style.display = 'block';
-        document.getElementById('fixResults').innerHTML = '';
-    } else {
-        fixCard.style.display = 'none';
-    }
+function renderAnalysis(r){
+  document.getElementById('analysisResults').style.display='block';
+  const s=r.stats||{},g=document.getElementById('statsGrid');g.innerHTML='';
+  [{label:'Vertices',value:(s.vertices||0).toLocaleString()},{label:'Faces',value:(s.faces||0).toLocaleString()},{label:'Objects',value:s.object_count||1},{label:'Watertight',value:s.is_watertight?'Yes':'No'}].forEach(st=>{
+    g.innerHTML+=`<div class="sc"><div class="sv">${st.value}</div><div class="sl">${st.label}</div></div>`;
+  });
+  const list=document.getElementById('issuesList');list.innerHTML='';
+  const issues=r.issues||[];
+  document.getElementById('issueCount').textContent=issues.length?`(${issues.length})`:'(none)';
+  if(!issues.length){list.innerHTML='<div class="ii"><div><div class="it" style="color:var(--t-grn)">No issues detected</div><div class="id2">This model looks clean for transfer.</div></div></div>';}
+  issues.forEach(i=>{
+    const bc=i.severity==='critical'?'bc':i.severity==='error'?'be':i.severity==='warning'?'bw':'bi';
+    list.innerHTML+=`<div class="ii"><span class="ib ${bc}">${i.severity}</span><div><div class="it">${i.title}</div><div class="id2">${i.description}</div>${i.auto_fixable?'<div class="ifix">⚙ Auto-fixable</div>':''}</div></div>`;
+  });
+  document.getElementById('fixCard').style.display=(r.fixable&&r.fixable.length)?'block':'none';
+  document.getElementById('fixResults').innerHTML='';
 }
 
-function renderTransferRecs(data) {
-    const card = document.getElementById('transferCard');
-    card.style.display = 'block';
-
-    const fmtDiv = document.getElementById('transferRecs');
-    fmtDiv.innerHTML = '';
-    (data.formats || []).forEach(f => {
-        fmtDiv.innerHTML += `
-            <div class="rec-card">
-                <div class="rec-rank">${f.priority}</div>
-                <div>
-                    <div class="rec-format">${f.format}</div>
-                    <div class="rec-reason">${f.reason}</div>
-                </div>
-            </div>`;
-    });
-
-    const issDiv = document.getElementById('transferIssues');
-    issDiv.innerHTML = '';
-    const issues = data.issues || [];
-    issues.forEach(iss => {
-        const solution = iss.solution || iss.fix || '';
-        const desc = iss.details || iss.symptom || '';
-        const title = iss.what_breaks || iss.issue || '';
-        issDiv.innerHTML += `
-            <div class="transfer-card">
-                <div class="what-breaks">${title}</div>
-                <div class="details">${desc}</div>
-                ${solution ? `<div class="solution">Fix: ${solution}</div>` : ''}
-            </div>`;
-    });
+function renderTransferRecs(d){
+  document.getElementById('transferCard').style.display='block';
+  document.getElementById('transferRecs').innerHTML=(d.formats||[]).map(f=>`<div class="rc"><div class="rr">${f.priority}</div><div><div class="rf">${f.format}</div><div class="rrs">${f.reason}</div></div></div>`).join('');
+  document.getElementById('transferIssues').innerHTML=(d.issues||[]).map(i=>`<div class="trc"><div class="wb">${i.what_breaks||i.issue||''}</div><div class="det">${i.details||i.symptom||''}</div>${i.solution||i.fix?`<div class="sol">Fix: ${i.solution||i.fix}</div>`:''}</div>`).join('');
 }
 
-// --- Format selector ---
-document.querySelectorAll('.format-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedFormat = btn.dataset.fmt;
-    });
+document.querySelectorAll('.fb').forEach(b=>{
+  b.addEventListener('click',()=>{document.querySelectorAll('.fb').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');selectedFormat=b.dataset.fmt;});
 });
 
-// --- Fix ---
-document.getElementById('fixBtn').addEventListener('click', async () => {
-    if (!analysisReport || !analysisReport.fixable || analysisReport.fixable.length === 0) return;
-
-    const loading = document.getElementById('fixLoading');
-    loading.classList.add('show');
-    document.getElementById('fixResults').innerHTML = '';
-
-    try {
-        const res = await fetch('/api/fix', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                filename: analysisReport.filename,
-                fixes: analysisReport.fixable,
-                output_format: selectedFormat
-            })
-        });
-        const result = await res.json();
-        renderFixResults(result);
-    } catch (err) {
-        document.getElementById('fixResults').innerHTML = `<div style="color:var(--red); margin-top:12px;">Fix failed: ${err.message}</div>`;
-    }
-    loading.classList.remove('show');
+document.getElementById('fixBtn').addEventListener('click',async()=>{
+  if(!analysisReport?.fixable?.length)return;
+  document.getElementById('fixLoading').classList.add('show');
+  document.getElementById('fixResults').innerHTML='';
+  try{
+    const res=await fetch('/api/fix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:analysisReport.filename,fixes:analysisReport.fixable,output_format:selectedFormat})});
+    renderFix(await res.json());
+  }catch(e){document.getElementById('fixResults').innerHTML=`<div style="color:var(--t-red);margin-top:10px">Fix failed: ${e.message}</div>`;}
+  document.getElementById('fixLoading').classList.remove('show');
 });
 
-function renderFixResults(result) {
-    const div = document.getElementById('fixResults');
-    if (!result.success) {
-        div.innerHTML = `<div style="color:var(--red); margin-top:12px;">Error: ${result.error}</div>`;
-        return;
-    }
-    let html = `<div class="fix-result"><h3>Repair Complete</h3>`;
-    (result.applied_fixes || []).forEach(f => {
-        html += `<div class="fix-item">${f}</div>`;
-    });
-    if (result.new_stats) {
-        html += `<div style="margin-top:12px; font-size:13px; color:var(--text-dim);">
-            New stats: ${result.new_stats.vertices.toLocaleString()} vertices, ${result.new_stats.faces.toLocaleString()} faces, watertight: ${result.new_stats.is_watertight ? 'Yes' : 'No'}
-        </div>`;
-    }
-    html += `<div class="btn-row"><a href="/api/download/${result.output_file}" class="btn btn-green" download>Download Fixed Model</a></div>`;
-    html += `</div>`;
-    div.innerHTML = html;
+function renderFix(r){
+  const d=document.getElementById('fixResults');
+  if(!r.success){d.innerHTML=`<div style="color:var(--t-red);margin-top:10px">Error: ${r.error}</div>`;return;}
+  let h=`<div class="fxr"><h3>Repair Complete</h3>`;
+  (r.applied_fixes||[]).forEach(f=>{h+=`<div class="fxi">${f}</div>`;});
+  if(r.new_stats)h+=`<div style="margin-top:10px;font-size:12px;color:var(--t-dim)">${r.new_stats.vertices.toLocaleString()} vertices · ${r.new_stats.faces.toLocaleString()} faces · watertight: ${r.new_stats.is_watertight?'Yes':'No'}</div>`;
+  h+=`<div class="br"><a href="/api/download/${r.output_file}" class="btn bg2" download>Download Fixed Model</a></div></div>`;
+  d.innerHTML=h;
 }
 
-// --- Tab 2: Recommend ---
-document.getElementById('recommendBtn').addEventListener('click', async () => {
-    const source = document.getElementById('recSource').value;
-    const target = document.getElementById('recTarget').value;
-    const errDiv = document.getElementById('recError');
-    errDiv.style.display = 'none';
-
-    if (!source || !target) {
-        errDiv.textContent = 'Please select both a source and target application.';
-        errDiv.style.display = 'block';
-        return;
-    }
-
-    document.getElementById('recLoading').style.display = 'flex';
-    document.getElementById('recommendBtn').disabled = true;
-    document.getElementById('recResults').style.display = 'none';
-
-    let data;
-    try {
-        const res = await fetch('/api/recommend', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ source, target })
-        });
-        if (!res.ok) throw new Error(`Server error: ${res.status}`);
-        data = await res.json();
-    } catch (err) {
-        errDiv.textContent = 'Could not get recommendations — make sure the app is running. (' + err.message + ')';
-        errDiv.style.display = 'block';
-        document.getElementById('recLoading').style.display = 'none';
-        document.getElementById('recommendBtn').disabled = false;
-        return;
-    }
-
-    document.getElementById('recLoading').style.display = 'none';
-    document.getElementById('recommendBtn').disabled = false;
-    document.getElementById('recResults').style.display = 'block';
-
-    const fmtDiv = document.getElementById('recFormats');
-    fmtDiv.innerHTML = '';
-    (data.formats || []).forEach(f => {
-        fmtDiv.innerHTML += `
-            <div class="rec-card">
-                <div class="rec-rank">${f.priority}</div>
-                <div>
-                    <div class="rec-format">${f.format}</div>
-                    <div class="rec-reason">${f.reason}</div>
-                </div>
-            </div>`;
-    });
-
-    const issCard = document.getElementById('recIssuesCard');
-    const issDiv = document.getElementById('recIssues');
-    issDiv.innerHTML = '';
-    const issues = data.issues || [];
-    if (issues.length > 0) {
-        issCard.style.display = 'block';
-        issues.forEach(iss => {
-            const solution = iss.solution || iss.fix || '';
-            const desc = iss.details || iss.symptom || '';
-            const title = iss.what_breaks || iss.issue || '';
-            issDiv.innerHTML += `
-                <div class="transfer-card">
-                    <div class="what-breaks">${title}</div>
-                    <div class="details">${desc}</div>
-                    ${solution ? `<div class="solution">Fix: ${solution}</div>` : ''}
-                </div>`;
-        });
-    } else {
-        issCard.style.display = 'none';
-    }
+document.getElementById('recommendBtn').addEventListener('click',async()=>{
+  const src=document.getElementById('recSource').value,tgt=document.getElementById('recTarget').value;
+  const err=document.getElementById('recError');err.style.display='none';
+  if(!src||!tgt){err.textContent='Please select both apps.';err.style.display='block';return;}
+  document.getElementById('recLoading').style.display='flex';
+  document.getElementById('recommendBtn').disabled=true;
+  document.getElementById('recResults').style.display='none';
+  try{
+    const res=await fetch('/api/recommend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source:src,target:tgt})});
+    if(!res.ok)throw new Error(`${res.status}`);
+    const d=await res.json();
+    document.getElementById('recResults').style.display='block';
+    document.getElementById('recFormats').innerHTML=(d.formats||[]).map(f=>`<div class="rc"><div class="rr">${f.priority}</div><div><div class="rf">${f.format}</div><div class="rrs">${f.reason}</div></div></div>`).join('');
+    const iss=d.issues||[];
+    if(iss.length){document.getElementById('recIssuesCard').style.display='block';document.getElementById('recIssues').innerHTML=iss.map(i=>`<div class="trc"><div class="wb">${i.what_breaks||i.issue||''}</div><div class="det">${i.details||i.symptom||''}</div>${i.solution||i.fix?`<div class="sol">Fix: ${i.solution||i.fix}</div>`:''}</div>`).join('');}
+    else{document.getElementById('recIssuesCard').style.display='none';}
+    fetchAIFormatAdvice(src,tgt,analysisReport?.stats||null);
+  }catch(e){err.textContent='Could not get recommendations. ('+e.message+')';err.style.display='block';}
+  document.getElementById('recLoading').style.display='none';
+  document.getElementById('recommendBtn').disabled=false;
 });
 
-// --- Tab 3: Knowledge Base ---
-async function loadKnowledgeBase() {
-    const [formats, knowledge] = await Promise.all([
-        fetch('/api/formats').then(r => r.json()),
-        fetch('/api/knowledge').then(r => r.json())
-    ]);
-
-    // Formats
-    const fGrid = document.getElementById('formatGrid');
-    const seen = new Set();
-    for (const [key, fmt] of Object.entries(formats)) {
-        if (seen.has(fmt.name)) continue;
-        seen.add(fmt.name);
-        fGrid.innerHTML += `
-            <div class="kb-card">
-                <h4>${fmt.name} <span style="color:var(--text-dim); font-weight:400">(${fmt.extension})</span></h4>
-                <p><strong>Geometry:</strong> ${fmt.geometry}<br>
-                <strong>Textures:</strong> ${fmt.textures || 'None'}<br>
-                <strong>Animation:</strong> ${fmt.animation || 'None'}<br>
-                <strong>Best for:</strong> ${fmt.best_for}</p>
-                <p style="margin-top:6px; color:var(--orange); font-size:12px;">${fmt.limitations}</p>
-            </div>`;
-    }
-
-    // Causes
-    const cGrid = document.getElementById('causesGrid');
-    (knowledge.key_causes || []).forEach(c => {
-        cGrid.innerHTML += `
-            <div class="kb-card">
-                <h4>${c.cause}</h4>
-                <p>${c.description}</p>
-                <p style="margin-top:6px; font-style:italic; color:var(--text-dim);">${c.example}</p>
-            </div>`;
-    });
-
-    // Tools
-    const tGrid = document.getElementById('toolsGrid');
-    (knowledge.recommended_tools || []).forEach(t => {
-        tGrid.innerHTML += `
-            <div class="kb-card">
-                <h4>${t.tool}</h4>
-                <p>${t.description}</p>
-                <div class="kb-tag">${t.use_case}</div>
-            </div>`;
-    });
+async function loadKB(){
+  try{
+    const[fmts,kb]=await Promise.all([fetch('/api/formats').then(r=>r.json()),fetch('/api/knowledge').then(r=>r.json())]);
+    const seen=new Set(),fg=document.getElementById('formatGrid');
+    for(const[,f] of Object.entries(fmts)){if(seen.has(f.name))continue;seen.add(f.name);fg.innerHTML+=`<div class="kbc"><h4>${f.name} <span style="color:var(--t-dim);font-weight:400">(${f.extension})</span></h4><p><strong>Geometry:</strong> ${f.geometry}<br><strong>Textures:</strong> ${f.textures||'None'}<br><strong>Animation:</strong> ${f.animation||'None'}<br><strong>Best for:</strong> ${f.best_for}</p><p style="margin-top:5px;color:var(--t-org);font-size:11px">${f.limitations}</p></div>`;}
+    (kb.key_causes||[]).forEach(c=>{document.getElementById('causesGrid').innerHTML+=`<div class="kbc"><h4>${c.cause}</h4><p>${c.description}</p><p style="margin-top:5px;font-style:italic;color:var(--t-dim)">${c.example}</p></div>`;});
+    (kb.recommended_tools||[]).forEach(t=>{document.getElementById('toolsGrid').innerHTML+=`<div class="kbc"><h4>${t.tool}</h4><p>${t.description}</p><div class="kt">${t.use_case}</div></div>`;});
+  }catch(e){console.warn('KB:',e);}
 }
+
+async function fetchAISummary(report,src,tgt){
+  const card=document.getElementById('aiSummaryCard'),txt=document.getElementById('aiSummaryText'),ld=document.getElementById('aiSummaryLoading');
+  card.style.display='block';ld.style.display='inline-block';txt.textContent='';
+  try{const r=await fetch('/api/ai/summary',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({report,source_app:src,target_app:tgt})});const d=await r.json();txt.textContent=d.summary||d.error||'No response.';txt.className=d.error?'at ae':'at';}
+  catch(e){txt.textContent='AI endpoint unreachable: '+e.message;txt.className='at ae';}
+  ld.style.display='none';
+}
+
+async function fetchAIFormatAdvice(src,tgt,stats){
+  const card=document.getElementById('aiFormatCard'),txt=document.getElementById('aiFormatText'),ld=document.getElementById('aiFormatLoading');
+  card.style.display='block';ld.style.display='inline-block';txt.textContent='';
+  try{const r=await fetch('/api/ai/format',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_app:src,target_app:tgt,model_stats:stats||null})});const d=await r.json();txt.textContent=d.advice||d.error||'No response.';txt.className=d.error?'at ae':'at';}
+  catch(e){txt.textContent='AI endpoint unreachable: '+e.message;txt.className='at ae';}
+  ld.style.display='none';
+}
+
+function buildCtx(){if(!analysisReport)return null;return{filename:analysisReport.filename,source_app:document.getElementById('sourceApp').value||'',target_app:document.getElementById('targetApp').value||'',stats:analysisReport.stats,issues:analysisReport.issues};}
+function addMsg(role,text){const m=document.getElementById('chatMessages'),d=document.createElement('div');d.className='msg '+role;d.textContent=text;m.appendChild(d);m.scrollTop=m.scrollHeight;}
+async function sendChat(){
+  const inp=document.getElementById('chatInput'),text=inp.value.trim();
+  if(!text)return;
+  addMsg('user',text);
+  chatHistory.push({role:'user',content:text});
+  inp.value='';inp.style.height='auto';
+  document.getElementById('sendBtn').disabled=true;
+  document.getElementById('typingIndicator').classList.add('show');
+  try{
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory,context:buildCtx()})});
+    const d=await r.json();
+    const reply=d.reply||d.error||'No response.';
+    addMsg('assistant',reply);
+    chatHistory.push({role:'assistant',content:reply});
+  }catch(e){addMsg('sys','Error: '+e.message);}
+  document.getElementById('sendBtn').disabled=false;
+  document.getElementById('typingIndicator').classList.remove('show');
+}
+
+document.getElementById('sendBtn').addEventListener('click',sendChat);
+document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+document.getElementById('chatInput').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px';});
+
+const obs=new IntersectionObserver(entries=>{entries.forEach(el=>{if(el.isIntersecting)el.target.classList.add('vis');});},{threshold:.07});
+document.querySelectorAll('.fi').forEach(el=>{el.classList.add('hidden');obs.observe(el);});
 </script>
 </body>
 </html>

@@ -1,0 +1,45 @@
+---
+title: 3D Model Lifecycle — Systems Map
+---
+flowchart TD
+
+    %% ── Actors ──────────────────────────────────────────────
+    CJ["CJ Snyder\n(Model Designer / Game Dev)"]
+    MAX["3ds Max\n(Modeling Software)"]
+    ZBR["ZBrush\n(Sculpting Software)"]
+    TOOL["3D Model Transfer Tool\n(Python / Flask)"]
+    UE["Unity / Unreal Engine\n(Game Engine)"]
+    PIPE["Active Dev Pipeline\n(Rigging · Texturing · Engine Logic)"]
+
+    %% ── Primary flow ─────────────────────────────────────────
+    CJ -->|"Builds geometry & UV maps"| MAX
+    CJ -->|"Sculpts high-poly mesh"| ZBR
+    MAX -->|"Exports .fbx / .obj file"| TOOL
+    ZBR -->|"Exports .obj / .fbx file"| TOOL
+    TOOL -->|"Delivers cleaned,\nformat-converted file"| UE
+    UE -->|"Model accepted into scene"| PIPE
+
+    %% ── Leverage Points ──────────────────────────────────────
+    %% LP1 — Export settings
+    MAX -.->|"⚡ LP1: Export settings\n(scale · normals · format)\nWrong values here break\nevery step downstream"| TOOL
+    ZBR -.->|"⚡ LP1: Export settings"| TOOL
+
+    %% LP2 — Transfer tool
+    TOOL -.->|"⚡ LP2: Transfer tool\nFlags & auto-fixes mesh errors\nbefore they compound in-engine"| UE
+
+    %% LP3 — Engine import settings
+    UE -.->|"⚡ LP3: Engine import settings\nStandardising scale & material\npaths prevents repeat failures"| PIPE
+
+    %% ── Feedback Loop 1 (Balancing) — first-import break ────
+    UE -->|"🔁 Loop 1 · Balancing\nModel fails first import\n(missing normals · wrong scale)\n→ CJ revises export in 3ds Max"| MAX
+
+    %% ── Feedback Loop 2 (Balancing) — post-import issues ────
+    UE -->|"🔁 Loop 2 · Balancing\nScale / material errors found\nafter import → re-run transfer tool\nwith corrected settings"| TOOL
+
+    %% ── Feedback Loop 3 (Balancing) — late pipeline break ───
+    PIPE -->|"🔁 Loop 3 · Balancing\nRig or texture errors surface\nlate in pipeline → CJ must\nreturn to source model"| CJ
+
+    %% ── Feedback Loop 4 (Reinforcing) — skill compounding ───
+    TOOL -->|"🔺 Loop 4 · Reinforcing\nEach flagged error teaches\ncorrect export settings →\nCJ exports cleaner next time\n→ fewer errors reach tool\n→ more time for complex work\n→ expertise compounds"| CJ
+
+    %% ── Styling ───────────────────────────────────
